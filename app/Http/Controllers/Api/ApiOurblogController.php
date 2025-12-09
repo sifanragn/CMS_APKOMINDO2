@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\OurBlog;
+use App\Models\Ourblog;
 use Illuminate\Http\Request;
 
 class ApiOurblogController extends Controller
@@ -11,7 +11,7 @@ class ApiOurblogController extends Controller
 
     public function index()
     {
-        $ourblogs = OurBlog::with('category')->latest()->get();
+        $ourblogs = Ourblog::with('category')->latest()->get();
 
         return response()->json([
             'status' => true,
@@ -22,7 +22,7 @@ class ApiOurblogController extends Controller
 
     public function show($id)
     {
-        $ourblog = OurBlog::with('category')->find($id);
+        $ourblog = Ourblog::with('category')->find($id);
 
         if (!$ourblog) {
             return response()->json([

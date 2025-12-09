@@ -234,7 +234,7 @@
 
         // Initialize CKEditor when the page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Enhanced configuration for CKEditor with more features including numbering
+            // Enhanced configuration for CKEditor
             const editorConfig = {
                 toolbar: {
                     items: [
@@ -267,101 +267,49 @@
                     ]
                 },
                 fontSize: {
-                    options: [
-                        9,
-                        11,
-                        13,
-                        'default',
-                        17,
-                        19,
-                        21
-                    ]
+                    options: [ 9, 11, 13, 'default', 17, 19, 21 ]
                 },
                 alignment: {
                     options: [ 'left', 'right', 'center', 'justify' ]
                 },
                 image: {
-                    toolbar: [
-                        'imageTextAlternative',
-                        'imageStyle:inline',
-                        'imageStyle:block',
-                        'imageStyle:side'
-                    ]
+                    toolbar: [ 'imageTextAlternative', 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side' ]
                 },
                 table: {
-                    contentToolbar: [
-                        'tableColumn',
-                        'tableRow',
-                        'mergeTableCells'
-                    ]
+                    contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
                 }
             };
 
-            // Initialize CKEditor for Add Modal - Ringkasan
-            ClassicEditor
-                .create(document.querySelector('#editorAddRingkasan'), editorConfig)
-                .then(editor => {
-                    addRingkasanEditor = editor;
+            // Initialize CKEditor instances
+            ClassicEditor.create(document.querySelector('#editorAddRingkasan'), editorConfig)
+                .then(editor => { 
+                    addRingkasanEditor = editor; 
                     console.log('Add Ringkasan Editor initialized successfully');
-
-                    // Sync with form on change
-                    editor.model.document.on('change:data', () => {
-                        document.querySelector('#editorAddRingkasan').value = editor.getData();
-                    });
                 })
-                .catch(error => {
-                    console.error('Error initializing add ringkasan editor:', error);
-                });
+                .catch(error => console.error('Error initializing add ringkasan editor:', error));
 
-            // Initialize CKEditor for Edit Modal - Ringkasan
-            ClassicEditor
-                .create(document.querySelector('#editorEditRingkasan'), editorConfig)
-                .then(editor => {
-                    editRingkasanEditor = editor;
+            ClassicEditor.create(document.querySelector('#editorEditRingkasan'), editorConfig)
+                .then(editor => { 
+                    editRingkasanEditor = editor; 
                     console.log('Edit Ringkasan Editor initialized successfully');
-
-                    // Sync with form on change
-                    editor.model.document.on('change:data', () => {
-                        document.querySelector('#editorEditRingkasan').value = editor.getData();
-                    });
                 })
-                .catch(error => {
-                    console.error('Error initializing edit ringkasan editor:', error);
-                });
+                .catch(error => console.error('Error initializing edit ringkasan editor:', error));
 
-            // Initialize CKEditor for Add Modal - First Deskripsi
-            ClassicEditor
-                .create(document.querySelector('#editorAddDeskripsi0'), editorConfig)
-                .then(editor => {
-                    addDeskripsiEditors[0] = editor;
+            ClassicEditor.create(document.querySelector('#editorAddDeskripsi0'), editorConfig)
+                .then(editor => { 
+                    addDeskripsiEditors[0] = editor; 
                     console.log('Add Deskripsi Editor initialized successfully');
-
-                    // Sync with form on change
-                    editor.model.document.on('change:data', () => {
-                        document.querySelector('#editorAddDeskripsi0').value = editor.getData();
-                    });
                 })
-                .catch(error => {
-                    console.error('Error initializing add deskripsi editor:', error);
-                });
+                .catch(error => console.error('Error initializing add deskripsi editor:', error));
 
-            // Initialize CKEditor for Edit Modal - First Deskripsi
-            ClassicEditor
-                .create(document.querySelector('#editorEditDeskripsi0'), editorConfig)
-                .then(editor => {
-                    editDeskripsiEditors[0] = editor;
+            ClassicEditor.create(document.querySelector('#editorEditDeskripsi0'), editorConfig)
+                .then(editor => { 
+                    editDeskripsiEditors[0] = editor; 
                     console.log('Edit Deskripsi Editor initialized successfully');
-
-                    // Sync with form on change
-                    editor.model.document.on('change:data', () => {
-                        document.querySelector('#editorEditDeskripsi0').value = editor.getData();
-                    });
                 })
-                .catch(error => {
-                    console.error('Error initializing edit deskripsi editor:', error);
-                });
+                .catch(error => console.error('Error initializing edit deskripsi editor:', error));
 
-            // Handle Add Form Submission
+            // Handle form submissions
             const addForm = document.getElementById('addCareerForm');
             if (addForm) {
                 addForm.addEventListener('submit', function(e) {
@@ -370,7 +318,6 @@
                 });
             }
 
-            // Handle Edit Form Submission
             const editForm = document.getElementById('editForm');
             if (editForm) {
                 editForm.addEventListener('submit', function(e) {
@@ -397,7 +344,7 @@
             @endif
         });
 
-        // Standardized alert functions
+        // Simplified alert functions
         function showAlert(type, message) {
             Swal.fire({
                 icon: type,
@@ -408,52 +355,22 @@
             });
         }
 
-        function showLoadingAlert(message = 'Memproses...') {
-            Swal.fire({
-                title: message,
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-        }
-
-        // Handle form submission with CKEditor data
+        // Simplified form submission - no complex fetch handling
         function handleFormSubmission(type) {
             const isAdd = type === 'add';
             const form = document.getElementById(isAdd ? 'addCareerForm' : 'editForm');
             const ringkasanEditor = isAdd ? addRingkasanEditor : editRingkasanEditor;
             const deskripsiEditors = isAdd ? addDeskripsiEditors : editDeskripsiEditors;
 
-            // Show loading
-            showLoadingAlert('Menyimpan data...');
-
             try {
-                // Create FormData
-                const formData = new FormData(form);
-
-                // Add CKEditor data for ringkasan
-                if (ringkasanEditor) {
-                    formData.set('ringkasan', ringkasanEditor.getData());
-                }
-
-                // Clear existing deskripsi entries and add fresh ones from CKEditor
-                formData.delete('deskripsi[]');
+                // Validate
                 let hasValidDeskripsi = false;
-
-                deskripsiEditors.forEach((editor, index) => {
-                    if (editor) {
-                        const deskripsiData = editor.getData().trim();
-                        if (deskripsiData) {
-                            formData.append('deskripsi[]', deskripsiData);
-                            hasValidDeskripsi = true;
-                        }
+                deskripsiEditors.forEach((editor) => {
+                    if (editor && editor.getData().trim()) {
+                        hasValidDeskripsi = true;
                     }
                 });
 
-                // Validate required fields
                 if (!hasValidDeskripsi) {
                     Swal.fire({
                         icon: 'error',
@@ -472,80 +389,21 @@
                     return;
                 }
 
-                // Submit using fetch
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
-                    }
-                })
-                .then(response => {
-                    const contentType = response.headers.get('content-type');
+                // Sync CKEditor data to form
+                syncCKEditorData(form, ringkasanEditor, deskripsiEditors);
 
-                    if (contentType && contentType.includes('application/json')) {
-                        return response.json().then(data => ({
-                            success: response.ok,
-                            data: data,
-                            status: response.status
-                        }));
-                    } else {
-                        if (response.ok || response.redirected) {
-                            return {
-                                success: true,
-                                data: { message: isAdd ? 'Career berhasil ditambahkan!' : 'Career berhasil diperbarui!' },
-                                status: response.status
-                            };
-                        } else {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                    }
-                })
-                .then(result => {
-                    if (result.success) {
-                        if (isAdd) {
-                            closeAddModal();
-                        } else {
-                            closeEditModal();
-                        }
-                        showAlert('success', result.data.message || (isAdd ? 'Career berhasil ditambahkan!' : 'Career berhasil diperbarui!'));
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        if (result.data.errors) {
-                            let errorMessage = '';
-                            Object.values(result.data.errors).forEach(errorArray => {
-                                errorArray.forEach(error => {
-                                    errorMessage += error + '<br>';
-                                });
-                            });
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                html: errorMessage
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.data.message || 'Gagal menyimpan data career!'
-                            });
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'
-                    });
-                });
+                // Close modal first to avoid seeing it during navigation
+                if (isAdd) {
+                    closeAddModal();
+                } else {
+                    closeEditModal();
+                }
+
+                // Submit form normally - let Laravel handle the redirect and flash messages
+                form.submit();
 
             } catch (error) {
-                console.error('Form preparation error:', error);
+                console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -554,47 +412,50 @@
             }
         }
 
-        function openAddModal() {
-            // Reset form
-            document.getElementById('addCareerForm').reset();
-
-            // Reset CKEditor content
-            if (addRingkasanEditor) {
-                addRingkasanEditor.setData('');
+        // Sync CKEditor data to hidden form inputs
+        function syncCKEditorData(form, ringkasanEditor, deskripsiEditors) {
+            // Handle ringkasan - use regular form field, not hidden input
+            if (ringkasanEditor) {
+                const ringkasanTextarea = form.querySelector('textarea[name="ringkasan"]');
+                if (ringkasanTextarea) {
+                    ringkasanTextarea.value = ringkasanEditor.getData();
+                }
             }
 
-            // Reset and destroy additional deskripsi editors
-            addDeskripsiEditors.forEach((editor, index) => {
-                if (index > 0 && editor) {
-                    editor.destroy();
+            // Handle deskripsi - sync to existing textareas
+            const deskripsiTextareas = form.querySelectorAll('textarea[name="deskripsi[]"]');
+            deskripsiEditors.forEach((editor, index) => {
+                if (editor && deskripsiTextareas[index]) {
+                    deskripsiTextareas[index].value = editor.getData();
                 }
             });
-            addDeskripsiEditors = addDeskripsiEditors.slice(0, 1);
+        }
 
-            // Reset first deskripsi editor
-            if (addDeskripsiEditors[0]) {
-                addDeskripsiEditors[0].setData('');
-            }
+        // Modal functions
+        function openAddModal() {
+            document.getElementById('addCareerForm').reset();
+            if (addRingkasanEditor) addRingkasanEditor.setData('');
+            
+            // Reset additional deskripsi editors (keep first one)
+            addDeskripsiEditors.forEach((editor, index) => {
+                if (index > 0 && editor) editor.destroy();
+            });
+            addDeskripsiEditors = addDeskripsiEditors.slice(0, 1);
+            if (addDeskripsiEditors[0]) addDeskripsiEditors[0].setData('');
 
             // Reset dynamic fields
-            document.getElementById('addKlasifikasiContainer').innerHTML =
+            document.getElementById('addKlasifikasiContainer').innerHTML = 
                 '<div class="flex gap-2"><input type="text" name="klasifikasi[]" required class="w-full border rounded p-2 text-sm" /></div>';
-            document.getElementById('addDeskripsiContainer').innerHTML =
+            document.getElementById('addDeskripsiContainer').innerHTML = 
                 '<div class="flex gap-2"><textarea name="deskripsi[]" id="editorAddDeskripsi0" rows="4" class="w-full border rounded p-2 text-sm"></textarea></div>';
 
             // Reinitialize first deskripsi editor
             setTimeout(() => {
-                ClassicEditor
-                    .create(document.querySelector('#editorAddDeskripsi0'))
-                    .then(editor => {
-                        addDeskripsiEditors[0] = editor;
-                    })
-                    .catch(error => {
-                        console.error('Error reinitializing add deskripsi editor:', error);
-                    });
+                ClassicEditor.create(document.querySelector('#editorAddDeskripsi0'))
+                    .then(editor => { addDeskripsiEditors[0] = editor; })
+                    .catch(error => console.error('Error reinitializing add deskripsi editor:', error));
             }, 100);
 
-            // Show modal
             document.getElementById('addModal').classList.remove('hidden');
         }
 
@@ -604,21 +465,15 @@
 
         function openEditModal(id) {
             const careerData = window.careers?.find(career => career.id == id);
-
             if (!careerData) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Data career tidak ditemukan'
-                });
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Data career tidak ditemukan' });
                 return;
             }
 
-            // Set form action dengan route yang benar
             const form = document.getElementById('editForm');
             form.action = `/career/${careerData.id}`;
 
-            // Populate form fields dengan handling null values
+            // Populate basic fields
             document.getElementById('editId').value = careerData.id || '';
             document.getElementById('editJobType').value = careerData.job_type || '';
             document.getElementById('editPositionTitle').value = careerData.position_title || '';
@@ -627,58 +482,38 @@
             document.getElementById('editJamKerja').value = careerData.jam_kerja || '';
             document.getElementById('editHariKerja').value = careerData.hari_kerja || '';
 
-            // Set ringkasan content in CKEditor
             if (editRingkasanEditor) {
                 editRingkasanEditor.setData(careerData.ringkasan || '');
             }
 
-            // Handle klasifikasi array
+            // Handle klasifikasi
             let klasifikasiHTML = '';
-            try {
-                if (careerData.klasifikasi && Array.isArray(careerData.klasifikasi) && careerData.klasifikasi.length > 0) {
-                    careerData.klasifikasi.forEach((k, index) => {
-                        klasifikasiHTML += `<div class="flex gap-2">
-                            <input type="text" name="klasifikasi[]" value="${escapeHtml(k || '')}" required class="w-full border rounded p-2 text-sm" />
-                            ${index > 0 ? '<button type="button" onclick="removeField(this)" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">×</button>' : ''}
-                        </div>`;
-                    });
-                } else {
-                    klasifikasiHTML =
-                        '<div class="flex gap-2"><input type="text" name="klasifikasi[]" required class="w-full border rounded p-2 text-sm" /></div>';
-                }
-            } catch (error) {
-                console.error('Error handling klasifikasi:', error);
-                klasifikasiHTML =
-                    '<div class="flex gap-2"><input type="text" name="klasifikasi[]" required class="w-full border rounded p-2 text-sm" /></div>';
+            if (careerData.klasifikasi && Array.isArray(careerData.klasifikasi) && careerData.klasifikasi.length > 0) {
+                careerData.klasifikasi.forEach((k, index) => {
+                    klasifikasiHTML += `<div class="flex gap-2">
+                        <input type="text" name="klasifikasi[]" value="${escapeHtml(k || '')}" required class="w-full border rounded p-2 text-sm" />
+                        ${index > 0 ? '<button type="button" onclick="removeField(this)" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">×</button>' : ''}
+                    </div>`;
+                });
+            } else {
+                klasifikasiHTML = '<div class="flex gap-2"><input type="text" name="klasifikasi[]" required class="w-full border rounded p-2 text-sm" /></div>';
             }
             document.getElementById('editKlasifikasiContainer').innerHTML = klasifikasiHTML;
 
-            // Destroy existing deskripsi editors
-            editDeskripsiEditors.forEach((editor, index) => {
-                if (editor) {
-                    editor.destroy();
-                }
-            });
+            // Handle deskripsi - destroy existing editors
+            editDeskripsiEditors.forEach(editor => { if (editor) editor.destroy(); });
             editDeskripsiEditors = [];
 
-            // Handle deskripsi array with CKEditor
             let deskripsiHTML = '';
-            try {
-                if (careerData.deskripsi && Array.isArray(careerData.deskripsi) && careerData.deskripsi.length > 0) {
-                    careerData.deskripsi.forEach((d, index) => {
-                        deskripsiHTML += `<div class="flex gap-2">
-                            <textarea name="deskripsi[]" id="editorEditDeskripsi${index}" rows="4" class="w-full border rounded p-2 text-sm">${escapeHtml(d || '')}</textarea>
-                            ${index > 0 ? '<button type="button" onclick="removeDeskripsiField(this, ' + index + ')" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm self-start">×</button>' : ''}
-                        </div>`;
-                    });
-                } else {
-                    deskripsiHTML =
-                        '<div class="flex gap-2"><textarea name="deskripsi[]" id="editorEditDeskripsi0" rows="4" class="w-full border rounded p-2 text-sm"></textarea></div>';
-                }
-            } catch (error) {
-                console.error('Error handling deskripsi:', error);
-                deskripsiHTML =
-                    '<div class="flex gap-2"><textarea name="deskripsi[]" id="editorEditDeskripsi0" rows="4" class="w-full border rounded p-2 text-sm"></textarea></div>';
+            if (careerData.deskripsi && Array.isArray(careerData.deskripsi) && careerData.deskripsi.length > 0) {
+                careerData.deskripsi.forEach((d, index) => {
+                    deskripsiHTML += `<div class="flex gap-2">
+                        <textarea name="deskripsi[]" id="editorEditDeskripsi${index}" rows="4" class="w-full border rounded p-2 text-sm">${escapeHtml(d || '')}</textarea>
+                        ${index > 0 ? `<button type="button" onclick="removeDeskripsiField(this, ${index})" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm self-start">×</button>` : ''}
+                    </div>`;
+                });
+            } else {
+                deskripsiHTML = '<div class="flex gap-2"><textarea name="deskripsi[]" id="editorEditDeskripsi0" rows="4" class="w-full border rounded p-2 text-sm"></textarea></div>';
             }
             document.getElementById('editDeskripsiContainer').innerHTML = deskripsiHTML;
 
@@ -686,21 +521,17 @@
             setTimeout(() => {
                 const textareas = document.querySelectorAll('#editDeskripsiContainer textarea');
                 textareas.forEach((textarea, index) => {
-                    ClassicEditor
-                        .create(textarea)
+                    ClassicEditor.create(textarea)
                         .then(editor => {
                             editDeskripsiEditors[index] = editor;
                             if (careerData.deskripsi && careerData.deskripsi[index]) {
                                 editor.setData(careerData.deskripsi[index]);
                             }
                         })
-                        .catch(error => {
-                            console.error(`Error initializing edit deskripsi editor ${index}:`, error);
-                        });
+                        .catch(error => console.error(`Error initializing edit deskripsi editor ${index}:`, error));
                 });
             }, 100);
 
-            // Show modal
             document.getElementById('editModal').classList.remove('hidden');
         }
 
@@ -716,9 +547,7 @@
                 '"': '&quot;',
                 "'": '&#039;'
             };
-            return text.replace(/[&<>"']/g, function(m) {
-                return map[m];
-            });
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
         function addInput(containerId, name) {
@@ -736,9 +565,7 @@
             deleteBtn.type = 'button';
             deleteBtn.className = 'px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm';
             deleteBtn.innerHTML = '×';
-            deleteBtn.onclick = function() {
-                removeField(this);
-            };
+            deleteBtn.onclick = function() { removeField(this); };
 
             div.appendChild(input);
             div.appendChild(deleteBtn);
@@ -764,9 +591,7 @@
             deleteBtn.type = 'button';
             deleteBtn.className = 'px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm self-start';
             deleteBtn.innerHTML = '×';
-            deleteBtn.onclick = function() {
-                removeDeskripsiField(this, editorCounter);
-            };
+            deleteBtn.onclick = function() { removeDeskripsiField(this, editorCounter); };
 
             div.appendChild(textarea);
             div.appendChild(deleteBtn);
@@ -774,8 +599,7 @@
 
             // Initialize CKEditor for the new textarea
             setTimeout(() => {
-                ClassicEditor
-                    .create(document.querySelector(`#${editorId}`))
+                ClassicEditor.create(document.querySelector(`#${editorId}`))
                     .then(editor => {
                         if (containerId.includes('add')) {
                             addDeskripsiEditors[editorCounter] = editor;
@@ -783,9 +607,7 @@
                             editDeskripsiEditors[editorCounter] = editor;
                         }
                     })
-                    .catch(error => {
-                        console.error(`Error initializing editor ${editorId}:`, error);
-                    });
+                    .catch(error => console.error(`Error initializing editor ${editorId}:`, error));
             }, 100);
         }
 

@@ -427,6 +427,7 @@
             document.getElementById('editModal').classList.add('hidden');
         }
 
+        // FIXED BULK DELETE FUNCTION
         function bulkDelete() {
             const checkedBoxes = document.querySelectorAll('.rowCheckbox:checked');
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
@@ -447,18 +448,12 @@
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Buat form dinamis dengan method POST
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('applications.bulkDelete') }}';
-
-                    // Tambahkan CSRF token
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '_token';
-                    csrfToken.value = '{{ csrf_token() }}';
-                    form.appendChild(csrfToken);
-
+                    // Gunakan form yang sudah ada
+                    const form = document.getElementById('bulkDeleteForm');
+                    
+                    // Clear form dan tambahkan CSRF
+                    form.innerHTML = '@csrf';
+                    
                     // Tambahkan IDs yang dipilih
                     ids.forEach(id => {
                         const input = document.createElement('input');
@@ -467,9 +462,7 @@
                         input.value = id;
                         form.appendChild(input);
                     });
-
-                    // Tambahkan ke body dan submit
-                    document.body.appendChild(form);
+                    
                     form.submit();
                 }
             });
