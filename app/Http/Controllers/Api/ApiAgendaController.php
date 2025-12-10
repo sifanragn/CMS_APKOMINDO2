@@ -12,14 +12,33 @@ class ApiAgendaController extends Controller
     public function index()
     {
         try {
-            // Ambil semua agenda beserta pembicara
-            $agendas = Agenda::with('speakers')->latest()->get();
+            $agendas = Agenda::with('speakers')
+                ->latest()
+                ->get()
+                ->map(function ($agenda) {
+
+                    // Tambahkan URL gambar agenda
+                    $agenda->image_url = $agenda->image
+                        ? asset('storage/' . $agenda->image)
+                        : null;
+
+                    // Tambahkan URL gambar setiap speaker
+                    $agenda->speakers->map(function ($speaker) {
+                        $speaker->image_url = $speaker->image
+                            ? asset('storage/' . $speaker->image)
+                            : null;
+                        return $speaker;
+                    });
+
+                    return $agenda;
+                });
 
             return response()->json([
                 'success' => true,
                 'message' => 'List agenda',
                 'data' => $agendas
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -41,11 +60,25 @@ class ApiAgendaController extends Controller
                 ], 404);
             }
 
+            // Tambahkan URL gambar agenda
+            $agenda->image_url = $agenda->image
+                ? asset('storage/' . $agenda->image)
+                : null;
+
+            // Tambahkan URL gambar speaker
+            $agenda->speakers->map(function ($speaker) {
+                $speaker->image_url = $speaker->image
+                    ? asset('storage/' . $speaker->image)
+                    : null;
+                return $speaker;
+            });
+
             return response()->json([
                 'success' => true,
                 'message' => 'Detail agenda',
                 'data' => $agenda
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

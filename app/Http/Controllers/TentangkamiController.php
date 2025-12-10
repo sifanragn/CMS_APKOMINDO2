@@ -312,4 +312,16 @@ class TentangkamiController extends Controller
             ], 500);
         }
     }
+    public function toggle(Request $request, $id)
+{
+    $item = TentangKami::findOrFail($id);
+
+    $item->display_on_home = $request->display_on_home;
+    $item->save();
+
+    return response()->json([
+        'message' => $item->display_on_home ? 'Ditampilkan di home' : 'Disembunyikan dari home'
+    ]);
+}
+
 }

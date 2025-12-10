@@ -16,54 +16,130 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200 text-sm">
-                <thead class="bg-gray-100 text-left">
-                    <tr>
-                        <th class="px-4 py-2 border">No</th>
-                        <th class="px-4 py-2 border">Judul</th>
-                        <th class="px-4 py-2 border">Kategori</th>
-                        <th class="px-4 py-2 border">Gambar</th>
-                        <th class="px-4 py-2 border">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tentangkamiTable">
-                    @if($tentangkami && $tentangkami->count() > 0)
-                        @foreach ($tentangkami as $index => $item)
-                            <tr>
-                                <td class="px-4 py-2 border">{{ $index + 1 }}</td>
-                                <td class="px-4 py-2 border">{{ $item->title ?? 'N/A' }}</td>
-                                <td class="px-4 py-2 border">
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                                        {{ $item->category->nama ?? 'Tidak ada kategori' }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2 border">
-                                    @if ($item->image)
-                                        <img src="{{ asset($item->image) }}"
-                                            class="w-24 h-24 object-cover object-center rounded shadow-md aspect-square">
-                                    @else
-                                        <span class="text-gray-400 text-xs">Tidak ada gambar</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2 border space-x-1">
-                                    <button onclick="openEditModal(this)" data-tentangkami='@json($item)'
-                                        class="text-blue-600 hover:text-blue-800 px-2 py-1 text-xs border border-blue-300 rounded hover:bg-blue-50">Edit</button>
-                                    <button onclick="confirmDelete({{ $item->id }})"
-                                        class="text-red-600 hover:text-red-800 px-2 py-1 text-xs border border-red-300 rounded hover:bg-red-50">Hapus</button>
-                                </td>
-                            </tr>
-                        @endforeach
+            <table class="min-w-full bg-white border border-gray-200 text-sm rounded-xl overflow-hidden">
+    <thead>
+        <tr class="bg-gray-50 border-b">
+            <th class="px-4 py-3 text-left font-semibold text-gray-700">No</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700">Kategori</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700">Gambar</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700">Aksi</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700">Tampilkan</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach ($tentangkami as $index => $item)
+            <tr class="border-b hover:bg-gray-50 transition">
+                <td class="px-4 py-3">{{ $index + 1 }}</td>
+
+                <td class="px-4 py-3 font-medium text-gray-800">
+                    {{ $item->title }}
+                </td>
+
+                <td class="px-4 py-3">
+                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
+                        {{ $item->category->nama ?? 'Tidak ada kategori' }}
+                    </span>
+                </td>
+
+                <td class="px-4 py-3">
+                    @if ($item->image)
+                        <img src="{{ asset($item->image) }}" 
+                             class="w-16 h-16 rounded-lg object-cover border shadow-sm">
                     @else
-                        <tr>
-                            <td colspan="6" class="px-4 py-8 border text-center text-gray-500">
-                                Tidak ada data tersedia
-                            </td>
-                        </tr>
+                        <span class="text-gray-400 text-xs">Tidak ada gambar</span>
                     @endif
-                </tbody>
-            </table>
+                </td>
+
+                <td class="px-4 py-3 space-x-1">
+                    <button onclick="showDetailModal(this)" data-detail='@json($item)'
+                        class="px-3 py-1 text-xs bg-gray-50 text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                        Detail
+                    </button>
+
+                    <button onclick="openEditModal(this)" data-tentangkami='@json($item)'
+                        class="px-3 py-1 text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100">
+                        Edit
+                    </button>
+
+                    <button onclick="confirmDelete({{ $item->id }})"
+                        class="px-3 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">
+                        Hapus
+                    </button>
+                </td>
+
+                <td class="px-4 py-3">
+                    <label class="iphone-switch">
+                        <input type="checkbox" onchange="toggleDisplay({{ $item->id }}, this)"
+                            {{ $item->display_on_home ? 'checked' : '' }}>
+                        <span class="slider"></span>
+                    </label>
+                </td>
+            </tr>
+        @endforeach
+
+        @if ($tentangkami->count() == 0)
+            <tr>
+                <td colspan="6" class="py-10 text-center text-gray-500">Tidak ada data tersedia</td>
+            </tr>
+        @endif
+    </tbody>
+</table>
+
         </div>
     </div>
+
+
+    <!-- Modal Detail -->
+<div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg w-full max-w-2xl p-6 overflow-y-auto max-h-screen space-y-4">
+
+        <h2 class="text-lg font-semibold">Detail Tentang Kami</h2>
+
+        <div class="space-y-4">
+
+            <div>
+                <h3 class="text-sm text-gray-500">Judul</h3>
+                <p id="detailTitle" class="font-semibold text-gray-800"></p>
+            </div>
+
+            <div>
+                <h3 class="text-sm text-gray-500">Kategori</h3>
+                <span id="detailCategory" class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"></span>
+            </div>
+
+            <div>
+                <h3 class="text-sm text-gray-500">Deskripsi</h3>
+                <div id="detailDescription" class="prose max-w-none text-gray-700"></div>
+            </div>
+
+            <div>
+                <h3 class="text-sm text-gray-500">Gambar</h3>
+                <img id="detailImage" onclick="openImageZoom(this.src)"
+     class="w-full max-h-72 object-contain rounded-lg shadow-md border cursor-zoom-in bg-gray-100" />
+
+            </div>
+
+            <div>
+                <h3 class="text-sm text-gray-500">Tampilkan di Halaman Utama</h3>
+                <p id="detailDisplay" class="font-medium"></p>
+            </div>
+
+        </div>
+
+        <div class="text-right">
+            <button id="detailEditBtn"
+                class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">
+                Edit
+            </button>
+            <button onclick="closeDetailModal()" 
+                class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
 
     <!-- Modal Tambah -->
     <div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -595,5 +671,132 @@
                 confirmButtonColor: '#3b82f6'
             });
         @endif
+
+        function toggleDisplay(id, checkbox) {
+    $.ajax({
+        url: `/tentangkami/toggle/${id}`,
+        type: "POST",
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            display_on_home: checkbox.checked ? 1 : 0
+        },
+        success: function(res) {
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "success",
+                title: res.message,
+                showConfirmButton: false,
+                timer: 2000
+            });
+        },
+        error: function() {
+            Swal.fire({
+                icon: "error",
+                title: "Gagal",
+                text: "Tidak dapat mengubah status.",
+            });
+            checkbox.checked = !checkbox.checked; // revert
+        }
+    });
+}
     </script>
+
+    <script>
+    //modal detail
+        function showDetailModal(button) {
+    const data = JSON.parse(button.getAttribute("data-detail"));
+
+    document.getElementById("detailTitle").textContent = data.title;
+    document.getElementById("detailCategory").textContent = data.category?.nama ?? "Tidak ada kategori";
+    document.getElementById("detailDescription").innerHTML = data.description ?? "-";
+
+    if (data.image) {
+        document.getElementById("detailImage").src = data.image.startsWith("http")
+            ? data.image
+            : `{{ asset('') }}` + data.image;
+    } else {
+        document.getElementById("detailImage").src = "";
+    }
+
+    document.getElementById("detailDisplay").textContent =
+        data.display_on_home ? "Ya, tampil di halaman utama" : "Tidak ditampilkan";
+
+        // === TOMBOL EDIT ===
+    document.getElementById("detailEditBtn").onclick = function () {
+
+        closeDetailModal();
+
+        // fake button untuk buka modal edit
+        let fakeBtn = document.createElement("button");
+        fakeBtn.setAttribute("data-tentangkami", JSON.stringify(data));
+
+        openEditModal(fakeBtn);
+    };
+
+    document.getElementById("detailModal").classList.remove("hidden");
+}
+
+function closeDetailModal() {
+    document.getElementById("detailModal").classList.add("hidden");
+}
+
+    </script>
+    <style>
+.iphone-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.iphone-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+/* ON */
+input:checked + .slider {
+    background-color: #008000; /* iPhone green */
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+table thead th {
+    border-bottom: 2px solid #e5e7eb;
+}
+
+table tbody tr td {
+    vertical-align: middle;
+}
+
+</style>
+
 @endsection

@@ -7,22 +7,31 @@ use App\Models\CategoryStore;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 
-
 class ApiProductsController extends Controller
 {
     /**
-     * Ambil semua produk beserta kategori
+     * GET semua produk
      */
     public function index(): JsonResponse
     {
         try {
-            $products = Product::with('category')->get();
+            $products = Product::with('category')
+                ->get()
+                ->map(function ($item) {
+                    // Tambahkan full URL gambar
+                    $item->image_url = $item->image 
+                        ? asset('storage/' . $item->image)
+                        : null;
+
+                    return $item;
+                });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data produk berhasil diambil',
                 'data' => $products
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -33,7 +42,7 @@ class ApiProductsController extends Controller
     }
 
     /**
-     * Ambil detail produk berdasarkan ID
+     * GET detail produk
      */
     public function show($id): JsonResponse
     {
@@ -47,11 +56,17 @@ class ApiProductsController extends Controller
                 ], 404);
             }
 
+            // Tambahkan gambar URL
+            $product->image_url = $product->image 
+                ? asset('storage/' . $product->image)
+                : null;
+
             return response()->json([
                 'success' => true,
                 'message' => 'Detail produk berhasil diambil',
                 'data' => $product
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -62,7 +77,7 @@ class ApiProductsController extends Controller
     }
 
     /**
-     * Ambil produk berdasarkan kategori
+     * GET produk berdasarkan kategori
      */
     public function getByCategory($categoryId): JsonResponse
     {
@@ -76,9 +91,17 @@ class ApiProductsController extends Controller
                 ], 404);
             }
 
-            $products = Product::where('category_store_id', $categoryId)
-                ->with('category')
-                ->get();
+            $products = Product::with('category')
+                ->where('category_store_id', $categoryId)
+                ->get()
+                ->map(function ($item) {
+                    // Tambahkan full URL gambar
+                    $item->image_url = $item->image
+                        ? asset('storage/' . $item->image)
+                        : null;
+
+                    return $item;
+                });
 
             return response()->json([
                 'success' => true,
@@ -86,6 +109,7 @@ class ApiProductsController extends Controller
                 'category' => $category,
                 'data' => $products
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -4,27 +4,42 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
-use App\Models\Career;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 
 class ApiApplicationController extends Controller
 {
     /**
-     * GET: Ambil semua lamaran kerja dengan career terkait (paginate)
+     * GET: Ambil semua lamaran kerja (paginate)
      */
     public function index()
     {
-        $applications = Application::with('career:id,position_title')
-            ->latest()
-            ->paginate(10);
+        try {
+            $applications = Application::with('career:id,position_title')
+                ->latest()
+                ->paginate(10);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Daftar lamaran berhasil diambil',
-            'data' => $applications
-        ]);
+            // Tambahkan file_url
+            $applications->getCollection()->transform(function ($item) {
+                $item->file_url = $item->file 
+                    ? asset('storage/' . $item->file)
+                    : null;
+                return $item;
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Daftar lamaran berhasil diambil',
+                'data' => $applications
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengambil data lamaran',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -32,13 +47,27 @@ class ApiApplicationController extends Controller
      */
     public function show($id)
     {
-        $application = Application::with('career:id,position_title')->findOrFail($id);
+        try {
+            $application = Application::with('career:id,position_title')->findOrFail($id);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Detail lamaran berhasil diambil',
-            'data' => $application
-        ]);
+            // Tambahkan file_url
+            $application->file_url = $application->file
+                ? asset('storage/' . $application->file)
+                : null;
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Detail lamaran berhasil diambil',
+                'data' => $application
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengambil detail lamaran',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -52,7 +81,7 @@ class ApiApplicationController extends Controller
             'email' => 'required|email|max:255',
             'no_telepon' => 'required|string|max:20',
             'cover_letter' => 'nullable|string',
-            'file' => 'nullable|file|mimes:pdf|max:2048', // Max 2MB
+            'file' => 'nullable|file|mimes:pdf|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -62,23 +91,39 @@ class ApiApplicationController extends Controller
             ], 422);
         }
 
-        $data = $request->only(['career_id', 'nama', 'email', 'no_telepon', 'cover_letter']);
+        try {
+            $data = $request->only([
+                'career_id', 'nama', 'email', 'no_telepon', 'cover_letter'
+            ]);
 
-        // Upload file jika ada
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('applications', $filename, 'public');
-            $data['file'] = $path;
+            // Upload file jika ada
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('applications', $filename, 'public');
+                $data['file'] = $path;
+            }
+
+            $application = Application::create($data);
+            $application->load('career:id,position_title');
+
+            // Tambahkan file_url
+            $application->file_url = $application->file
+                ? asset('storage/' . $application->file)
+                : null;
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lamaran berhasil dikirim!',
+                'data' => $application
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengirim lamaran',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $application = Application::create($data);
-        $application->load('career:id,position_title');
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Lamaran berhasil dikirim!',
-            'data' => $application
-        ]);
     }
 }

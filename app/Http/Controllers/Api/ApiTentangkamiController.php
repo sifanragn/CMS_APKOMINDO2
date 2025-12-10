@@ -9,13 +9,21 @@ use Illuminate\Support\Facades\Log;
 
 class ApiTentangkamiController extends Controller
 {
-    // GET semua data Tentangkami
+    // ===============================
+    // GET Semua Data Tentang Kami
+    // ===============================
     public function index()
     {
         try {
             $tentangkami = Tentangkami::with('category')
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                    $item->image_url = $item->image
+                        ? asset('storage/' . $item->image)
+                        : null;
+                    return $item;
+                });
 
             return response()->json([
                 'success' => true,
@@ -27,14 +35,22 @@ class ApiTentangkamiController extends Controller
         }
     }
 
+    // ======================================
     // GET Tentangkami berdasarkan category_id
+    // ======================================
     public function getByCategory($categoryId)
     {
         try {
             $tentangkami = Tentangkami::with('category')
                 ->where('category_tentangkami_id', $categoryId)
                 ->latest()
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                    $item->image_url = $item->image
+                        ? asset('storage/' . $item->image)
+                        : null;
+                    return $item;
+                });
 
             return response()->json(['success' => true, 'data' => $tentangkami]);
         } catch (\Exception $e) {
@@ -43,7 +59,9 @@ class ApiTentangkamiController extends Controller
         }
     }
 
-    // GET Tentangkami berdasarkan nama kategori
+    // ===================================================
+    // GET Tentangkami berdasarkan NAMA kategori (string)
+    // ===================================================
     public function getByCategoryName($categoryName)
     {
         try {
@@ -56,7 +74,13 @@ class ApiTentangkamiController extends Controller
             $tentangkami = Tentangkami::with('category')
                 ->where('category_tentangkami_id', $category->id)
                 ->latest()
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                    $item->image_url = $item->image
+                        ? asset('storage/' . $item->image)
+                        : null;
+                    return $item;
+                });
 
             return response()->json(['success' => true, 'data' => $tentangkami]);
         } catch (\Exception $e) {
@@ -65,14 +89,22 @@ class ApiTentangkamiController extends Controller
         }
     }
 
-    // GET Tentangkami yang tampil di homepage
+    // ==========================================================
+    // GET Semua Tentangkami yang tampil di Homepage (display_on_home = 1)
+    // ==========================================================
     public function getDisplayOnHome()
     {
         try {
             $tentangkami = Tentangkami::with('category')
                 ->where('display_on_home', true)
                 ->latest()
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                    $item->image_url = $item->image
+                        ? asset('storage/' . $item->image)
+                        : null;
+                    return $item;
+                });
 
             return response()->json(['success' => true, 'data' => $tentangkami]);
         } catch (\Exception $e) {

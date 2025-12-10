@@ -18,51 +18,78 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200 text-sm">
-                <thead class="bg-gray-100 text-left">
-                    <tr>
-                        <th class="px-4 py-2 border">Gambar</th>
-                        <th class="px-4 py-2 border">Judul</th>
-                        <th class="px-4 py-2 border">Subtitle</th>
-                        <th class="px-4 py-2 border">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="sliderTable">
-                    @forelse ($sliders as $item)
-                        <tr>
-                            <td class="px-4 py-2 border">
-                                @if ($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}"
-                                        class="w-24 h-24 object-cover object-center rounded shadow-md aspect-square">
-                                @else
-                                    <div class="w-24 h-24 bg-gray-200 rounded flex items-center justify-center">
-                                        <span class="text-gray-400 text-xs">No Image</span>
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="px-4 py-2 border">{{ $item->title ?? '-' }}</td>
-                            <td class="px-4 py-2 border">
-                                <div class="max-w-xs truncate" title="{{ strip_tags($item->subtitle) }}">
-                                    {!! Str::limit($item->subtitle, 50) !!}
-                                </div>
-                            </td>
-                            <td class="px-4 py-2 border space-x-1">
-                                <button onclick="openEditModal(this)" data-slider='@json($item)'
-                                    class="text-blue-600 hover:text-blue-800 px-2 py-1 text-xs border border-blue-300 rounded hover:bg-blue-50">Edit</button>
-                                <button onclick="confirmDelete({{ $item->id }})"
-                                    class="text-red-600 hover:text-red-800 px-2 py-1 text-xs border border-red-300 rounded hover:bg-red-50">Hapus</button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-4 py-8 text-center text-gray-500">
-                                Belum ada data slider
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <table class="min-w-full bg-white border border-gray-200 text-sm rounded-xl overflow-hidden">
+        <thead>
+            <tr class="bg-gray-50 border-b">
+                <th class="px-4 py-3 text-left font-semibold text-gray-700">Gambar</th>
+                <th class="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
+                <th class="px-4 py-3 text-left font-semibold text-gray-700">Subtitle</th>
+                <th class="px-4 py-3 text-center font-semibold text-gray-700">Tampilkan</th>
+                <th class="px-4 py-3 text-left font-semibold text-gray-700">Aksi</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($sliders as $item)
+                <tr class="border-b hover:bg-gray-50 transition">
+
+                    {{-- IMAGE --}}
+                    <td class="px-4 py-3">
+                        @if ($item->image)
+                            <img src="{{ asset('storage/' . $item->image) }}"
+                                 class="w-16 h-16 rounded-lg object-cover border shadow-sm">
+                        @else
+                            <span class="text-gray-400 text-xs">Tidak ada gambar</span>
+                        @endif
+                    </td>
+
+                    {{-- TITLE --}}
+                    <td class="px-4 py-3 font-medium text-gray-800">
+                        {{ $item->title ?? '-' }}
+                    </td>
+
+                    {{-- SUBTITLE --}}
+                    <td class="px-4 py-3">
+                        <div class="max-w-xs truncate" title="{{ strip_tags($item->subtitle) }}">
+                            {!! Str::limit($item->subtitle, 50) !!}
+                        </div>
+                    </td>
+
+                    {{-- SWITCH --}}
+                    <td class="px-4 py-3 text-center">
+                        <label class="iphone-switch">
+                            <input type="checkbox"
+                                   onchange="toggleSliderDisplay({{ $item->id }}, this)"
+                                   {{ $item->display_on_home ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+
+                    {{-- ACTION --}}
+                    <td class="px-4 py-3 space-x-1">
+                        <button onclick="openEditModal(this)" data-slider='@json($item)'
+                            class="px-3 py-1 text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100">
+                            Edit
+                        </button>
+
+                        <button onclick="confirmDelete({{ $item->id }})"
+                            class="px-3 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">
+                            Hapus
+                        </button>
+                    </td>
+
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" class="py-10 text-center text-gray-500">
+                        Belum ada data slider
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
     </div>
 
     <!-- Form tersembunyi untuk delete -->
@@ -725,5 +752,85 @@
                 uploadArea.style.display = 'block';
             }
         }
+
+        function toggleSliderDisplay(id, checkbox) {
+    fetch(`/slider/toggle/${id}`, {
+        method: "POST",
+        headers: {
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            display_on_home: checkbox.checked ? 1 : 0
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: data.message,
+            showConfirmButton: false,
+            timer: 2000
+        });
+    })
+    .catch(() => {
+        Swal.fire({
+            icon: "error",
+            title: "Gagal",
+            text: "Tidak dapat mengubah status slider."
+        });
+        checkbox.checked = !checkbox.checked; // undo
+    });
+}
+
     </script>
+<style>
+    .iphone-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.iphone-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.iphone-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.iphone-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.iphone-switch input:checked + .slider {
+    background-color: #008000;
+}
+
+.iphone-switch input:checked + .slider:before {
+    transform: translateX(22px);
+}
+</style>
 @endsection

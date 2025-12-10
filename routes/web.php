@@ -111,10 +111,14 @@ Route::prefix('tentangkami')->name('tentangkami.')->group(function () {
     Route::put('/{id}', [TentangkamiController::class, 'update'])->name('update');
     Route::delete('/{id}', [TentangkamiController::class, 'destroy'])->name('destroy');
 
+    Route::post('toggle/{id}', [TentangKamiController::class, 'toggle'])->name('tentangkami.toggle');
+
+
     // API routes yang ADA di controller
     Route::get('/category/{categoryId}', [TentangkamiController::class, 'getByCategory'])->name('category');
     Route::get('/category-name/{categoryName}', [TentangkamiController::class, 'getByCategoryName'])->name('category.name');
     Route::get('/display-on-home', [TentangkamiController::class, 'getDisplayOnHome'])->name('display.home');
+
 });
 
 Route::prefix('ourblogs')->name('ourblogs.')->group(function () {
@@ -165,6 +169,8 @@ Route::prefix('slider')->name('slider.')->group(function () {
     Route::post('/', [SliderController::class, 'store'])->name('store');
     Route::put('/{id}', [SliderController::class, 'update'])->name('update');
     Route::delete('/{id}', [SliderController::class, 'destroy'])->name('destroy');
+    Route::post('toggle/{id}', [SliderController::class, 'toggleDisplay']);
+
 });
 
 Route::prefix('anggota')->name('anggota.')->group(function () {

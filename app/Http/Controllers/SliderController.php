@@ -197,6 +197,17 @@ class SliderController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+    public function toggleDisplay($id)
+{
+    $slider = Slider::findOrFail($id);
+    $slider->display_on_home = !$slider->display_on_home;
+    $slider->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Status slider berhasil diperbarui.'
+    ]);
+}
 
     public function showHomeSlider()
     {
