@@ -826,7 +826,7 @@
 }
 
 .iphone-switch input:checked + .slider {
-    background-color: #008000;
+    background-color: #59B5F7;
 }
 
 .iphone-switch input:checked + .slider:before {

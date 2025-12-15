@@ -782,7 +782,7 @@ function closeDetailModal() {
 
 /* ON */
 input:checked + .slider {
-    background-color: #008000; /* iPhone green */
+    background-color: #59B5F7; /* iPhone green */
 }
 
 input:checked + .slider:before {

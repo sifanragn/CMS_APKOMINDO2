@@ -24,45 +24,92 @@
 
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white border border-gray-200 text-sm">
-                <thead class="bg-gray-100 text-left">
+                <thead class="bg-gray-50 border-b">
                     <tr>
-                        <th class="px-4 py-2 border"><input type="checkbox" id="selectAll"></th>
-                        <th class="px-4 py-2 border">Gambar</th>
-                        <th class="px-4 py-2 border">Judul</th>
-                        <th class="px-4 py-2 border">Deskripsi</th>
-                        <th class="px-4 py-2 border">Tanggal</th>
-                        <th class="px-4 py-2 border">Kategori</th>
-                        <th class="px-4 py-2 border">Waktu Baca</th>
-                        <th class="px-4 py-2 border">Aksi</th>
+                        <th class="px-4 py-3 w-10">
+                            <input type="checkbox" id="selectAll">
+                        </th>
+                        <th class="px-4 py-3">Gambar</th>
+                        <th class="px-4 py-3">Judul</th>
+                        <th class="px-4 py-3">Deskripsi</th>
+                        <th class="px-4 py-3">Tanggal</th>
+                        <th class="px-4 py-3">Kategori</th>
+                        <th class="px-4 py-3">Waktu Baca</th>
+                        <th class="px-4 py-3 text-center">Aksi</th>
                     </tr>
                 </thead>
+
                 <tbody id="blogTable">
-                    @foreach ($ourblogs as $item)
-                        <tr>
-                            <td class="px-4 py-2 border">
-                                <input type="checkbox" name="ourblog_ids[]" value="{{ $item->id }}" class="rowCheckbox"
-                                    onchange="updateBulkDeleteButton()">
-                            </td>
-                            <td class="px-4 py-2 border">
-                                @if ($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}"
-                                        class="w-24 h-24 object-cover object-center rounded shadow-md aspect-square">
-                                @endif
-                            </td>
-                            <td class="px-4 py-2 border">{{ $item->title }}</td>
-                            <td class="px-4 py-2 border">{!! Str::limit($item->description, 50) !!}</td>
-                            <td class="px-4 py-2 border">{{ \Carbon\Carbon::parse($item->pub_date)->format('d M Y') }}</td>
-                            <td class="px-4 py-2 border">{{ $item->category->name ?? '-' }}</td>
-                            <td class="px-4 py-2 border">{{ $item->waktu_baca ?? '-' }}</td>
-                            <td class="px-4 py-2 border space-x-1">
-                                <a href="{{ route('ourblogs.show', $item->id) }}"
-                                    class="text-green-600 hover:text-green-800 px-2 py-1 text-xs border border-green-300 rounded hover:bg-green-50 inline-block">Detail</a>
-                                <button onclick="openEditModal(this)" data-item='@json($item)'
-                                    class="text-blue-600 hover:text-blue-800 px-2 py-1 text-xs border border-blue-300 rounded hover:bg-blue-50">Edit</button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
+@foreach ($ourblogs as $item)
+<tr class="border-b hover:bg-gray-50 transition align-middle">
+
+    {{-- Checkbox --}}
+    <td class="px-4 py-3">
+        <input type="checkbox"
+            value="{{ $item->id }}"
+            class="rowCheckbox"
+            onchange="updateBulkDeleteButton()">
+    </td>
+
+    {{-- Gambar --}}
+    <td class="px-4 py-3">
+        @if ($item->image)
+            <img
+                src="{{ asset('storage/' . $item->image) }}"
+                class="w-20 h-20 rounded-lg object-cover border shadow-sm"
+                alt="{{ $item->title }}"
+            >
+        @else
+            <span class="text-gray-400 text-xs">Tidak ada</span>
+        @endif
+    </td>
+
+    {{-- Judul --}}
+    <td class="px-4 py-3 font-medium text-gray-800">
+        {{ $item->title }}
+    </td>
+
+    {{-- Deskripsi --}}
+    <td class="px-4 py-3 text-gray-600 max-w-xs">
+        {!! \Illuminate\Support\Str::limit(strip_tags($item->description), 80) !!}
+    </td>
+
+    {{-- Tanggal --}}
+    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
+        {{ \Carbon\Carbon::parse($item->pub_date)->format('d M Y') }}
+    </td>
+
+    {{-- Kategori --}}
+    <td class="px-4 py-3">
+        <span class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
+            {{ $item->category->name ?? '-' }}
+        </span>
+    </td>
+
+    {{-- Waktu baca --}}
+    <td class="px-4 py-3 text-gray-700">
+        {{ $item->waktu_baca ?? '-' }}
+    </td>
+
+    {{-- Aksi --}}
+    <td class="px-4 py-3 text-center space-x-1 whitespace-nowrap">
+        <a href="{{ route('ourblogs.show', $item->id) }}"
+            class="px-3 py-1 text-xs bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100">
+            Detail
+        </a>
+
+        <button
+            onclick="openEditModal(this)"
+            data-item='@json($item)'
+            class="px-3 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100">
+            Edit
+        </button>
+    </td>
+
+</tr>
+@endforeach
+</tbody>
+
             </table>
         </div>
     </div>

@@ -22,60 +22,99 @@
                 class="border px-3 py-2 w-full rounded text-sm" onkeyup="searchTable()">
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200 text-sm">
-                <thead class="bg-gray-100 text-left">
-                    <tr>
-                        <th class="px-4 py-2 border"><input type="checkbox" id="selectAll"></th>
-                        <th class="px-4 py-2 border">Gambar</th>
-                        <th class="px-4 py-2 border">Judul</th>
-                        <th class="px-4 py-2 border">Tanggal</th>
-                        <th class="px-4 py-2 border">Lokasi</th>
-                        <th class="px-4 py-2 border">Pembicara</th>
-                        <th class="px-4 py-2 border">Status</th>
-                        <th class="px-4 py-2 border">Aksi</th>
+        {{-- Table --}}
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 text-sm rounded-xl overflow-hidden">
+            <thead>
+                <tr class="bg-gray-50 border-b">
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">No</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Gambar</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Tanggal</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Lokasi</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Pembicara</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody id="agendaTable">
+                @foreach ($agendas as $index => $item)
+                    <tr class="border-b hover:bg-gray-50 transition">
+
+                        <td class="px-4 py-3">
+                            {{ $index + 1 }}
+                        </td>
+
+                        <td class="px-4 py-3 font-medium text-gray-800">
+                            {{ $item->title }}
+                        </td>
+                        
+                        <td class="px-4 py-3">
+                        @if ($item->image)
+                            <img
+                                src="{{ asset('storage/' . $item->image) }}"
+                                class="w-16 h-16 rounded-lg object-cover border shadow-sm"
+                                alt="{{ $item->title }}"
+                            >
+                        @else
+                            <span class="text-gray-400 text-xs">Tidak ada gambar</span>
+                        @endif
+                    </td>
+
+
+                        <td class="px-4 py-3 text-gray-700">
+                            {{ \Carbon\Carbon::parse($item->start_datetime)->format('d M Y H:i') }}
+                        </td>
+
+                        <td class="px-4 py-3 text-gray-700">
+                            {{ $item->location }}
+                        </td>
+
+                        <td class="px-4 py-3">
+                            @if ($item->speakers && $item->speakers->count())
+                                @foreach ($item->speakers as $speaker)
+                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs mr-1">
+                                        {{ $speaker->name }}
+                                    </span>
+                                @endforeach
+                            @else
+                                <span class="text-gray-400 text-xs">Tidak ada</span>
+                            @endif
+                        </td>
+
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded text-xs
+                                {{ $item->status === 'Open'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-red-100 text-red-700' }}">
+                                {{ $item->status }}
+                            </span>
+                        </td>
+
+                        <td class="px-4 py-3 space-x-1">
+                            <a href="{{ route('agenda.show', $item->id) }}"
+                                class="px-3 py-1 text-xs bg-gray-50 text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                                Detail
+                            </a>
+
+                            <button onclick="openEditModal({{ $item->id }})"
+                                class="px-3 py-1 text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100">
+                                Edit
+                            </button>
+                        </td>
                     </tr>
-                </thead>
-                <tbody id="agendaTable">
-                    @foreach ($agendas as $item)
-                        <tr>
-                            <td class="px-4 py-2 border">
-                                <input type="checkbox" name="agenda_ids[]" value="{{ $item->id }}" class="rowCheckbox"
-                                    onchange="updateBulkDeleteButton()">
-                            </td>
-                            <td class="px-4 py-2 border">
-                                @if ($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}"
-                                        class="w-24 h-24 object-cover object-center rounded shadow-md aspect-square">
-                                @endif
-                            </td>
-                            <td class="px-4 py-2 border">{{ $item->title }}</td>
-                            <td class="px-4 py-2 border">
-                                {{ \Carbon\Carbon::parse($item->start_datetime)->format('d M Y H:i') }}</td>
-                            <td class="px-4 py-2 border">{{ $item->location }}</td>
-                            <td class="px-4 py-2 border">
-                                @if ($item->speakers && $item->speakers->count() > 0)
-                                    @foreach ($item->speakers as $speaker)
-                                        <span
-                                            class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">
-                                            {{ $speaker->name }}
-                                        </span>
-                                    @endforeach
-                                @else
-                                    <span class="text-gray-400">Tidak ada pembicara</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-2 border">{{ $item->status }}</td>
-                            <td class="px-4 py-2 border space-x-1">
-                                <a href="{{ route('agenda.show', $item->id) }}"
-                                    class="text-green-600 hover:text-green-800 px-2 py-1 text-xs border border-green-300 rounded hover:bg-green-50 inline-block">Detail</a>
-                                <button onclick="openEditModal({{ $item->id }})"
-                                    class="text-blue-600 hover:text-blue-800 px-2 py-1 text-xs border border-blue-300 rounded hover:bg-blue-50">Edit</button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                @endforeach
+
+                @if ($agendas->count() == 0)
+                    <tr>
+                        <td colspan="7" class="py-10 text-center text-gray-500">
+                            Tidak ada agenda tersedia
+                        </td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
         </div>
     </div>
 
@@ -923,4 +962,14 @@
         // Call auto-save initialization
         setTimeout(initializeAutoSave, 2000);
     </script>
+
+    <style>
+table thead th {
+    border-bottom: 2px solid #e5e7eb;
+}
+
+table tbody tr td {
+    vertical-align: middle;
+}
+</style>
 @endsection

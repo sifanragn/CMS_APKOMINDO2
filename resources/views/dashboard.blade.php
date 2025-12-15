@@ -59,77 +59,98 @@
 
     {{-- Konten Lain di bawah Slider --}}
     <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded shadow">
-            <h3 class="text-lg font-semibold mb-2">Agenda Terdekat</h3>
-            @if ($agendas->count())
-                <ul class="text-gray-600 space-y-2">
-                    @foreach ($agendas as $agenda)
-                        <li>
-                            <strong>{{ \Carbon\Carbon::parse($agenda->start_datetime)->translatedFormat('d F Y') }}</strong>
-                            –
-                            {{ $agenda->title }}
-                        </li>
-                    @endforeach
-                </ul>
-            @else
-                <p class="text-gray-500">Belum ada agenda terdekat.</p>
-            @endif
-        </div>
 
-        <div class="bg-white p-6 rounded shadow">
-            <h3 class="text-lg font-semibold mb-2">KTA Online</h3>
-            <p class="text-gray-600">Kini anggota dapat mengakses KTA secara digital.</p>
-        </div>
-        <div class="bg-white p-6 rounded shadow">
-            <h3 class="text-lg font-semibold mb-2">Loker Terkini</h3>
-            @if ($totalLoker > 0)
-                <p class="text-gray-600">Terdapat <strong>{{ $totalLoker }}</strong> lowongan yang tersedia.</p>
-            @else
-                <p class="text-gray-500">Belum ada lowongan tersedia saat ini.</p>
-            @endif
-        </div>
+    {{-- Agenda Terdekat --}}
+    <a href="{{ route('agenda.index') }}" 
+       class="block bg-white p-6 rounded shadow hover:shadow-lg hover:-translate-y-1 transition">
+        <h3 class="text-lg font-semibold mb-2">Agenda Terdekat</h3>
 
-    </div>
+        @if ($agendas->count())
+            <ul class="text-gray-600 space-y-2">
+                @foreach ($agendas as $agenda)
+                    <li>
+                        <strong>{{ \Carbon\Carbon::parse($agenda->start_datetime)->translatedFormat('d F Y') }}</strong> –
+                        {{ $agenda->title }}
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <p class="text-gray-500">Belum ada agenda terdekat.</p>
+        @endif
+    </a>
+
+    {{-- KTA Online --}}
+    <a href="{{ route('hows.index') }}" 
+       class="block bg-white p-6 rounded shadow hover:shadow-lg hover:-translate-y-1 transition">
+        <h3 class="text-lg font-semibold mb-2">KTA Online</h3>
+        <p class="text-gray-600">Kini anggota dapat mengakses KTA secara digital.</p>
+    </a>
+
+    {{-- Loker Terkini --}}
+    <a href="{{ route('career.index') }}" 
+       class="block bg-white p-6 rounded shadow hover:shadow-lg hover:-translate-y-1 transition">
+        <h3 class="text-lg font-semibold mb-2">Loker Terkini</h3>
+
+        @if ($totalLoker > 0)
+            <p class="text-gray-600">Terdapat <strong>{{ $totalLoker }}</strong> lowongan yang tersedia.</p>
+        @else
+            <p class="text-gray-500">Belum ada lowongan tersedia saat ini.</p>
+        @endif
+    </a>
+
+</div>
+
 @endsection
 
 @push('scripts')
     <script>
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const indicators = document.querySelectorAll('.slide-indicator');
-        const totalSlides = {{ $sliders->count() }};
+document.addEventListener("DOMContentLoaded", function () {
 
-        function showSlide(index) {
-            // Update slides
-            slides.forEach((slide, i) => {
-                slide.classList.toggle('opacity-100', i === index);
-                slide.classList.toggle('opacity-0', i !== index);
-                slide.classList.toggle('absolute', i !== index);
-            });
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const indicators = document.querySelectorAll('.slide-indicator');
+    const totalSlides = slides.length;
 
-            // Update indicators
-            indicators.forEach((indicator, i) => {
-                indicator.classList.toggle('bg-gray-600', i === index);
-                indicator.classList.toggle('bg-gray-400', i !== index);
-            });
+    function showSlide(index) {
 
-            currentSlide = index;
-        }
-
-        function nextSlide() {
-            if (totalSlides > 1) {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                showSlide(currentSlide);
+        slides.forEach((slide, i) => {
+            if (i === index) {
+                slide.classList.remove("opacity-0", "absolute");
+                slide.classList.add("opacity-100");
+            } else {
+                slide.classList.remove("opacity-100");
+                slide.classList.add("opacity-0", "absolute");
             }
-        }
+        });
 
-        // Auto-slide jika ada lebih dari 1 slide
-        @if ($sliders->count() > 1)
-            setInterval(nextSlide, 5000); // Change slide every 5 seconds
-        @endif
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle("bg-gray-600", i === index);
+            indicator.classList.toggle("bg-gray-400", i !== index);
+        });
 
-        window.onload = () => {
-            showSlide(0); // Start with first slide
-        }
-    </script>
+        currentSlide = index;
+    }
+
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        showSlide(currentSlide);
+    }
+
+    // Klik bullet indicator
+    indicators.forEach((btn, index) => {
+        btn.addEventListener("click", () => {
+            showSlide(index);
+        });
+    });
+
+    // Auto slide setiap 5 detik
+    if (totalSlides > 1) {
+        setInterval(nextSlide, 5000);
+    }
+
+    showSlide(0);
+
+});
+</script>
+
 @endpush
