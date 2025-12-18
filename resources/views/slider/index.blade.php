@@ -204,6 +204,8 @@
         <form id="editForm" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
+            <!-- TEMPAT PENAMPUNG ID FOTO YANG DIHAPUS -->
+            <div id="deletedExtraWrapper"></div>
 
             <!-- ===== BASIC FIELD ===== -->
             <div class="grid grid-cols-2 gap-4">
@@ -267,19 +269,21 @@
             <hr class="my-6">
 
            <!-- ===== FOTO TAMBAHAN ===== -->
-            <div class="mt-6">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="font-semibold text-sm">Foto Tambahan</h3>
-                    <button type="button"
-                            onclick="addExtraImageEdit()"
-                            class="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100">
-                        + Tambah Foto
-                    </button>
-                </div>
+<div class="mt-6">
 
+    <div class="flex items-center justify-between mb-2">
+        <h3 class="font-semibold text-sm">Foto Tambahan</h3>
+        <button type="button"
+                onclick="addExtraImageEdit()"
+                class="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100">
+            + Tambah Foto
+        </button>
+    </div>
 
-    <!-- FORM FOTO BARU (MUNCUL JIKA + Tambah Foto) -->
     <div id="extraImagesWrapperEdit" class="space-y-4 mt-4"></div>
+
+</div> <!-- ✅ WAJIB ADA -->
+
 
 
             <!-- ACTION -->
@@ -373,6 +377,7 @@ const editorConfig = {
 </script>
 
     <script>
+        let extraEditEditors = {};
         // Global variables for CKEditor instances
         let addSubtitleEditor = null;
         let editSubtitleEditor = null;
@@ -408,22 +413,6 @@ const editorConfig = {
                     console.error('Error initializing add subtitle editor:', error);
                 });
 
-            // Initialize CKEditor for Edit Modal
-            ClassicEditor
-                .create(document.querySelector('#editorEditSubtitle'), editorConfig)
-                .then(editor => {
-                    editSubtitleEditor = editor;
-                    console.log('Edit Subtitle Editor initialized successfully');
-
-                    // Sync with form on change
-                    editor.model.document.on('change:data', () => {
-                        document.querySelector('#editorEditSubtitle').value = editor.getData();
-                    });
-                })
-                .catch(error => {
-                    console.error('Error initializing edit subtitle editor:', error);
-                });
-
             // Handle flash messages
             @if(session('success'))
                 showAlert('success', "{{ session('success') }}");
@@ -451,6 +440,32 @@ const editorConfig = {
                 });
             }
         });
+
+    function initEditSubtitleEditor(initialData = '') {
+    const el = document.getElementById('editorEditSubtitle');
+    if (!el) return;
+
+    // destroy editor lama
+    if (editSubtitleEditor) {
+        editSubtitleEditor.destroy();
+        editSubtitleEditor = null;
+    }
+
+    ClassicEditor
+        .create(el, editorConfig)
+        .then(editor => {
+            editSubtitleEditor = editor;
+
+            // 🔥 SET DATA DI SINI (KUNCI)
+            editor.setData(initialData);
+
+            // sync ke textarea
+            editor.model.document.on('change:data', () => {
+                el.value = editor.getData();
+            });
+        })
+        .catch(err => console.error(err));
+}
 
         // Handle form submission with proper AJAX response handling
         function handleFormSubmission() {
@@ -539,107 +554,120 @@ const editorConfig = {
             document.getElementById('addModal').classList.add('hidden');
         }
         
-      function openEditModal(button) {
-  const slider = JSON.parse(button.dataset.slider);
-  const wrapper = document.getElementById('extraImagesWrapperEdit');
-  wrapper.innerHTML = '';
+   function openEditModal(button) {
+    const slider = JSON.parse(button.dataset.slider);
 
-  /* ===============================
-     DATA TAMBAHAN (WAJIB MUNCUL)
-  =============================== */
-  if (Array.isArray(slider.extra_images) && slider.extra_images.length > 0) {
+    /* ===============================
+       RESET EXTRA IMAGE WRAPPER
+    =============================== */
+    const wrapper = document.getElementById('extraImagesWrapperEdit');
+    wrapper.innerHTML = '';
 
-    slider.extra_images.forEach(img => {
-      const index = img.id;
+    /* ===============================
+       DESTROY EDITOR LAMA (PENTING)
+    =============================== */
+    if (editSubtitleEditor) {
+        editSubtitleEditor.destroy();
+        editSubtitleEditor = null;
+    }
 
-      const div = document.createElement('div');
-      div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+    if (window.extraEditEditors) {
+        Object.values(extraEditEditors).forEach(ed => ed && ed.destroy());
+    }
+    window.extraEditEditors = {};
 
-      div.innerHTML = `
-        <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
+    /* ===============================
+       SET DATA UTAMA
+    =============================== */
+    document.getElementById('editTitle').value = slider.title || '';
+    document.getElementById('editYoutubeId').value = slider.youtube_id || '';
+    document.getElementById('editButtonText').value = slider.button_text || '';
+    document.getElementById('editUrlLink').value = slider.url_link || '';
+    document.getElementById('editDisplayOnHome').checked = !!slider.display_on_home;
 
-        <!-- INPUT FILE (OPTIONAL, UNTUK REPLACE) -->
-        <input type="file"
-          name="extra_images[${index}]"
-          id="extraInput_${index}"
-          class="hidden"
-          accept="image/*"
-          onchange="previewExtraReplace(this, ${index})">
+    document.getElementById('editPreview').innerHTML =
+        slider.image
+            ? `<img src="/storage/${slider.image}" class="h-32 w-32 rounded border">`
+            : '';
 
-        <div
-          onclick="document.getElementById('extraInput_${index}').click()"
-          class="border-2 border-dashed border-gray-300 rounded-lg p-6
-                 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50">
-          Klik untuk ganti foto
-        </div>
+    document.getElementById('editForm').action = `/slider/${slider.id}`;
+    document.getElementById('editModal').classList.remove('hidden');
 
-        <!-- PREVIEW FOTO (DEFAULT = FOTO LAMA) -->
-        <div id="extraPreview_${index}" class="mt-3">
-          <img src="/storage/${img.image}"
-               class="w-20 h-20 object-cover rounded border">
-        </div>
+    /* ===============================
+       INIT CKEDITOR SUBTITLE UTAMA
+    =============================== */
+    initEditSubtitleEditor(slider.subtitle || '');
 
-        <label class="block text-sm font-medium mt-3">Judul</label>
-        <input type="text"
-          name="extra_titles[${index}]"
-          value="${img.title ?? ''}"
-          class="w-full border rounded p-2 text-sm mb-2">
+    /* ===============================
+       FOTO TAMBAHAN + CKEDITOR
+    =============================== */
+    if (Array.isArray(slider.extra_images) && slider.extra_images.length) {
+        slider.extra_images.forEach(img => {
+            const index = img.id;
 
-        <label class="block text-sm font-medium">Subtitle</label>
-        <textarea
-          name="extra_subtitles[${index}]"
-          id="extraEditEditor_${index}"
-          class="w-full border rounded p-2 text-sm"
-          rows="3">${img.subtitle ?? ''}</textarea>
-      `;
+            const div = document.createElement('div');
+            div.className = 'border rounded-lg p-4 bg-gray-50 relative';
 
-      wrapper.appendChild(div);
+            div.innerHTML = `
+                <button type="button"
+                onclick="removeExtraEdit(this, '${index}')"
+                class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
 
-      ClassicEditor.create(
-        document.querySelector(`#extraEditEditor_${index}`),
-        editorConfig
-      ).then(editor => {
-        editor.model.document.on('change:data', () => {
-          document.querySelector(`#extraEditEditor_${index}`).value = editor.getData();
+
+                <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
+
+                <input type="file"
+                    accept="image/*"
+                    name="extra_images[${index}]"
+                    id="extraInput_${index}"
+                    class="hidden"
+                    onchange="previewExtraReplace(this, ${index})">
+
+                <div onclick="document.getElementById('extraInput_${index}').click()"
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer">
+                    Klik atau drag foto ke sini (replace)
+                </div>
+
+                <div id="extraPreview_${index}" class="mt-3">
+                    <img src="/storage/${img.image}"
+                         class="w-20 h-20 object-cover rounded border">
+                </div>
+
+                <label class="block text-sm font-medium mt-3">Judul</label>
+                <input type="text"
+                    name="extra_titles[${index}]"
+                    value="${img.title ?? ''}"
+                    class="w-full border rounded p-2 text-sm mb-2">
+
+                <label class="block text-sm font-medium">Subtitle</label>
+                <textarea
+                    name="extra_subtitles[${index}]"
+                    id="extraEditEditor_${index}"
+                    class="w-full border rounded p-2 text-sm"
+                    rows="3">${img.subtitle ?? ''}</textarea>
+            `;
+
+            wrapper.appendChild(div);
+
+            /* ===============================
+               INIT CKEDITOR EXTRA SUBTITLE
+            =============================== */
+            setTimeout(() => {
+                const textarea = document.getElementById(`extraEditEditor_${index}`);
+                if (!textarea) return;
+
+                ClassicEditor.create(textarea, editorConfig)
+                    .then(editor => {
+                        extraEditEditors[index] = editor;
+                        editor.model.document.on('change:data', () => {
+                            textarea.value = editor.getData();
+                        });
+                    })
+                    .catch(err => console.error(err));
+            }, 50);
         });
-      });
-    });
-
-  } else {
-    wrapper.innerHTML = `
-      <p class="text-sm text-gray-500 italic">
-        Belum ada foto tambahan
-      </p>
-    `;
-  }
-
-  /* ===============================
-     DATA UTAMA (SUDAH BENAR)
-  =============================== */
-  document.getElementById('editTitle').value = slider.title || '';
-  document.getElementById('editYoutubeId').value = slider.youtube_id || '';
-  document.getElementById('editButtonText').value = slider.button_text || '';
-  document.getElementById('editUrlLink').value = slider.url_link || '';
-  document.getElementById('editDisplayOnHome').checked = !!slider.display_on_home;
-
-  if (editSubtitleEditor) {
-    editSubtitleEditor.setData(slider.subtitle || '');
-  }
-
-  /* GAMBAR UTAMA */
-  const editPreview = document.getElementById('editPreview');
-  editPreview.innerHTML = slider.image
-    ? `<img src="/storage/${slider.image}" class="h-32 w-32 rounded border">`
-    : '';
-/* ===============================
-   SET FORM ACTION (WAJIB)
-=============================== */
-const form = document.getElementById('editForm');
-form.action = `/slider/${slider.id}`;
-
-  document.getElementById('editModal').classList.remove('hidden');
+    }
 }
-
 
         function closeEditModal() {
             document.getElementById('editModal').classList.add('hidden');
@@ -1005,85 +1033,7 @@ function renderExtraReplacePreview(file, index) {
 }
 
 </script>
-<script>
-let extraEditIndex = 0;
 
-function addExtraImageEdit() {
-    const wrapper = document.getElementById('extraImagesWrapperEdit');
-    const index = 'new_' + extraEditIndex++;
-
-    const div = document.createElement('div');
-    div.className = 'extra-item border rounded-lg p-4 relative bg-gray-50';
-
-    div.innerHTML = `
-        <button type="button"
-            onclick="this.closest('.extra-item').remove()"
-            class="absolute top-2 right-2 text-red-500 hover:text-red-700">
-            ✕
-        </button>
-
-        <div class="grid grid-cols-1 gap-4">
-            <div>
-                <label class="block text-xs font-medium mb-1">Foto Tambahan</label>
-
-                <input
-  type="file"
-  multiple
-  name="extra_images[${index}][]"
-  id="extraInput_${index}"
->
-
-
-
-                <div
-                    onclick="document.getElementById('extraInput_${index}').click()"
-                    ondrop="handleExtraDropEdit(event, ${index})"
-                    ondragover="event.preventDefault()"
-                    class="border-2 border-dashed border-gray-300 rounded-xl p-6
-                           text-center text-sm cursor-pointer
-                           hover:border-blue-400 hover:bg-blue-50 transition w-full">
-                    Klik atau drag beberapa foto
-                </div>
-
-                <div id="extraEditPreview_${index}" class="grid grid-cols-3 gap-2 mt-3"></div>
-            </div>
-
-            <div>
-                <label class="block mb-1 font-medium">Judul</label>
-                <input type="text"
-                    name="extra_titles[${index}]"
-                    class="w-full border rounded p-2 text-sm mb-3">
-
-                <label class="block mb-1 font-medium">Subtitle</label>
-                <textarea
-                    name="extra_subtitles[${index}]"
-                    id="extraEditEditor_${index}"
-                    rows="4"
-                    class="w-full border rounded p-2 text-sm"></textarea>
-            </div>
-        </div>
-    `;
-
-    wrapper.appendChild(div);
-
-    // CKEditor
-    ClassicEditor.create(
-        document.querySelector(`#extraEditEditor_${index}`),
-        editorConfig
-    ).then(editor => {
-        editor.model.document.on('change:data', () => {
-            document.querySelector(`#extraEditEditor_${index}`).value = editor.getData();
-        });
-    });
-
-    document
-  .getElementById(`extraInput_${index}`)
-  .addEventListener('change', e => {
-      console.log(e.target.files);
-  });
-
-}
-</script>
 <script>
 function removeExistingExtraImage(imageId, index) {
     const preview = document.getElementById(`extraEditPreview_${index}`);
@@ -1177,6 +1127,98 @@ function previewExtraReplace(input, index) {
   reader.readAsDataURL(input.files[0]);
 }
 
+</script>
+<script>
+let extraEditIndex = 0;
+
+/* ===============================
+   ➕ TAMBAH FOTO EXTRA (EDIT)
+=============================== */
+function addExtraImageEdit() {
+    const wrapper = document.getElementById('extraImagesWrapperEdit');
+    const index = 'new_' + extraEditIndex++;
+
+    const div = document.createElement('div');
+    div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+    div.innerHTML = `
+        <button type="button"
+            onclick="removeExtraEdit(this, '${index}')"
+            class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
+
+        <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
+
+        <input type="file"
+            accept="image/*"
+            name="extra_images[${index}]"
+            id="extraInput_${index}"
+            class="hidden"
+            onchange="previewExtraReplace(this, '${index}')">
+
+        <div onclick="document.getElementById('extraInput_${index}').click()"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer">
+            Klik untuk upload foto
+        </div>
+
+        <div id="extraPreview_${index}" class="mt-3"></div>
+
+        <label class="block text-sm font-medium mt-3">Judul</label>
+        <input type="text"
+            name="extra_titles[${index}]"
+            class="w-full border rounded p-2 text-sm mb-2">
+
+        <label class="block text-sm font-medium">Subtitle</label>
+        <textarea
+            name="extra_subtitles[${index}]"
+            id="extraEditEditor_${index}"
+            class="w-full border rounded p-2 text-sm"
+            rows="3"></textarea>
+    `;
+
+    wrapper.appendChild(div);
+
+    /* ===============================
+       🔥 INIT CKEDITOR (KUNCI)
+    =============================== */
+    setTimeout(() => {
+        const textarea = document.getElementById(`extraEditEditor_${index}`);
+        if (!textarea) return;
+
+        ClassicEditor.create(textarea, editorConfig)
+            .then(editor => {
+                extraEditEditors[index] = editor;
+
+                editor.model.document.on('change:data', () => {
+                    textarea.value = editor.getData();
+                });
+            })
+            .catch(err => console.error('CKEditor extra edit error:', err));
+    }, 50);
+}
+
+/* ===============================
+   ❌ HAPUS FOTO EXTRA (GLOBAL)
+=============================== */
+function removeExtraEdit(button, id) {
+    const wrapper = button.closest('.border');
+    if (wrapper) wrapper.remove();
+
+    // destroy CKEditor
+    if (extraEditEditors[id]) {
+        extraEditEditors[id].destroy();
+        delete extraEditEditors[id];
+    }
+
+    // tandai hapus di backend (untuk data lama)
+    if (!id.startsWith('new_')) {
+        const deletedWrapper = document.getElementById('deletedExtraWrapper');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'delete_extra_ids[]';
+        input.value = id;
+        deletedWrapper.appendChild(input);
+    }
+}
 </script>
 
 <style>

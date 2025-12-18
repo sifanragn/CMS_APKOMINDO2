@@ -113,9 +113,9 @@ public function update(Request $request, $id)
     try {
         $slider = Slider::findOrFail($id);
 
-        // ===============================
-        // VALIDATION
-        // ===============================
+        /* ===============================
+           VALIDATION
+        =============================== */
         $validated = $request->validate([
             'title'           => 'nullable|string|max:255',
             'subtitle'        => 'nullable|string',
@@ -126,90 +126,109 @@ public function update(Request $request, $id)
             'display_on_home' => 'nullable|boolean',
         ]);
 
-        // ===============================
-        // IMAGE UTAMA (SLIDER)
-        // ===============================
-        // ===============================
-// HANDLE EXTRA IMAGE FILES
-// ===============================
-if ($request->hasFile('extra_images')) {
-
-    foreach ($request->file('extra_images') as $key => $value) {
-
-        /**
-         * ===============================
-         * TAMBAH FOTO BARU (new_xxx)
-         * ===============================
-         */
-        if (str_starts_with($key, 'new_') && is_array($value)) {
-
-            foreach ($value as $file) {
-                $path = $file->store('sliders/extra', 'public');
-
-                SliderImage::create([
-                    'slider_id' => $slider->id,
-                    'image'     => $path,
-                    'title'     => $request->extra_titles[$key] ?? null,
-                    'subtitle'  => $request->extra_subtitles[$key] ?? null,
-                ]);
-            }
-        }
-
-        /**
-         * ===============================
-         * REPLACE FOTO EXISTING (1 FILE)
-         * ===============================
-         */
-        if (is_numeric($key) && $value instanceof \Illuminate\Http\UploadedFile) {
-
-            $img = SliderImage::find($key);
-            if (!$img) continue;
-
-            // hapus file lama
-            if ($img->image && Storage::disk('public')->exists($img->image)) {
-                Storage::disk('public')->delete($img->image);
+        /* ===============================
+           UPDATE DATA UTAMA SLIDER 🔥
+        =============================== */
+        if ($request->hasFile('image')) {
+            if ($slider->image && Storage::disk('public')->exists($slider->image)) {
+                Storage::disk('public')->delete($slider->image);
             }
 
-            // simpan file baru
-            $img->image = $value->store('sliders/extra', 'public');
-
-            // update text
-            $img->title    = $request->extra_titles[$key] ?? $img->title;
-            $img->subtitle = $request->extra_subtitles[$key] ?? $img->subtitle;
-
-            $img->save();
+            $validated['image'] = $request->file('image')->store('sliders', 'public');
         }
+
+        $validated['display_on_home'] = $request->has('display_on_home') ? 1 : 0;
+
+        // 🔥 INI YANG SEBELUMNYA HILANG
+        $slider->update($validated);
+        /* ===============================
+   ❌ DELETE EXTRA IMAGES
+=============================== */
+if ($request->filled('delete_extra_ids')) {
+    foreach ($request->delete_extra_ids as $imgId) {
+
+        $img = SliderImage::find($imgId);
+        if (!$img) continue;
+
+        // hapus file fisik
+        if ($img->image && Storage::disk('public')->exists($img->image)) {
+            Storage::disk('public')->delete($img->image);
+        }
+
+        // hapus record DB
+        $img->delete();
     }
 }
 
 
+       /* ===============================
+   HANDLE EXTRA IMAGES (FIX FINAL)
+=============================== */
 
-        DB::commit();
+// 1️⃣ UPDATE TITLE & SUBTITLE (WALAU TANPA FILE)
+if ($request->has('extra_titles') || $request->has('extra_subtitles')) {
+    foreach ($request->extra_titles ?? [] as $key => $title) {
 
-        // ===============================
-        // RESPONSE
-        // ===============================
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Slider berhasil diperbarui.'
+        if (!is_numeric($key)) continue;
+
+        $img = SliderImage::find($key);
+        if (!$img) continue;
+
+        $img->update([
+            'title'    => $title,
+            'subtitle' => $request->extra_subtitles[$key] ?? $img->subtitle,
+        ]);
+    }
+}
+
+// 2️⃣ HANDLE FILE IMAGE (JIKA ADA)
+if ($request->hasFile('extra_images')) {
+    foreach ($request->file('extra_images') as $key => $file) {
+
+        // ➕ FOTO BARU
+        if (str_starts_with($key, 'new')) {
+            if (!$file instanceof \Illuminate\Http\UploadedFile) continue;
+
+            $path = $file->store('sliders/extra', 'public');
+
+            SliderImage::create([
+                'slider_id' => $slider->id,
+                'image'     => $path,
+                'title'     => $request->extra_titles[$key] ?? null,
+                'subtitle'  => $request->extra_subtitles[$key] ?? null,
             ]);
         }
 
-        return redirect()->route('slider.index')
-            ->with('success', 'Slider berhasil diperbarui.');
+        // 🔁 REPLACE FOTO LAMA
+        if (is_numeric($key) && $file instanceof \Illuminate\Http\UploadedFile) {
+            $img = SliderImage::find($key);
+            if (!$img) continue;
 
-    } catch (\Exception $e) {
+            if ($img->image && Storage::disk('public')->exists($img->image)) {
+                Storage::disk('public')->delete($img->image);
+            }
+
+            $img->update([
+                'image' => $file->store('sliders/extra', 'public'),
+            ]);
+        }
+    }
+}
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Slider berhasil diperbarui.'
+        ]);
+
+    } catch (\Throwable $e) {
         DB::rollBack();
 
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-
-        return redirect()->back()->with('error', $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
 }
 

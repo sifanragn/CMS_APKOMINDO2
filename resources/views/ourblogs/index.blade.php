@@ -71,7 +71,7 @@
 
     {{-- Deskripsi --}}
     <td class="px-4 py-3 text-gray-600 max-w-xs">
-        {!! \Illuminate\Support\Str::limit(strip_tags($item->description), 80) !!}
+        {!! Str::limit(strip_tags($item->description), 120) !!}
     </td>
 
     {{-- Tanggal --}}
@@ -99,10 +99,10 @@
         </a>
 
         <button
-            onclick="openEditModal(this)"
-            data-item='@json($item)'
-            class="px-3 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100">
-            Edit
+        onclick="openEditModal(this)"
+        data-item='@json($item->load("extraImages"))'
+        class="px-3 py-1 text-xs bg-blue-50 text-blue-700 border rounded">
+        Edit
         </button>
     </td>
 
@@ -172,8 +172,22 @@
                                 <p class="text-sm text-gray-500">PNG, JPG, atau GIF (MAX. 2MB)</p>
                             </div>
                         </div>
-
                         <div id="addPreview" class="mt-4"></div>
+                        <hr class="my-6">
+
+                        <div class="mt-6">
+                        <div class="flex justify-between mb-2">
+                            <h3 class="font-semibold text-sm">Foto Tambahan</h3>
+                            <button type="button"
+                            onclick="addExtraImageAdd()"
+                            class="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded">
+                            + Tambah Foto
+                            </button>
+                        </div>
+
+                        <div id="extraImagesWrapperAdd" class="space-y-4"></div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -194,6 +208,7 @@
             <form id="editForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
+                <div id="deletedExtraWrapper"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block mb-1 font-medium">Judul</label>
@@ -247,6 +262,18 @@
                         </div>
 
                         <div id="editPreview" class="mt-4"></div>
+                        <hr class="my-4">
+
+                        <div class="flex justify-between mb-2">
+                            <h3 class="font-semibold text-sm">Foto Tambahan</h3>
+
+                            <button type="button"
+                                onclick="addExtraImageEdit()"
+                                class="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded">
+                                + Tambah Foto
+                            </button>
+                        </div>
+                        <div id="extraImagesWrapperEdit" class="space-y-4"></div>
                     </div>
                 </div>
 
@@ -264,7 +291,70 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- CKEditor -->
     <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
-
+    <script>
+        let extraEditEditors = {};
+    const editorConfig = {
+                    toolbar: {
+                        items: [
+                            'heading', '|',
+                            'bold', 'italic', 'underline', 'strikethrough', '|',
+                            'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                            'numberedList', 'bulletedList', '|',
+                            'outdent', 'indent', '|',
+                            'alignment', '|',
+                            'link', 'insertTable', '|',
+                            'blockQuote', 'insertImage', '|',
+                            'undo', 'redo', '|',
+                            'sourceEditing'
+                        ]
+                    },
+                    language: 'id',
+                    list: {
+                        properties: {
+                            styles: true,
+                            startIndex: true,
+                            reversed: true
+                        }
+                    },
+                    heading: {
+                        options: [
+                            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                            { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                            { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                            { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                        ]
+                    },
+                    fontSize: {
+                        options: [
+                            9,
+                            11,
+                            13,
+                            'default',
+                            17,
+                            19,
+                            21
+                        ]
+                    },
+                    alignment: {
+                        options: [ 'left', 'right', 'center', 'justify' ]
+                    },
+                    image: {
+                        toolbar: [
+                            'imageTextAlternative',
+                            'imageStyle:inline',
+                            'imageStyle:block',
+                            'imageStyle:side'
+                        ]
+                    },
+                    table: {
+                        contentToolbar: [
+                            'tableColumn',
+                            'tableRow',
+                            'mergeTableCells'
+                        ]
+                    }
+                };
+    </script>
     <script>
         // Global variables for CKEditor instances
         let addDescriptionEditor = null;
@@ -296,69 +386,6 @@
         // Initialize CKEditor when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             setupDragAndDrop();
-
-            // Enhanced configuration for CKEditor with more features
-            const editorConfig = {
-                toolbar: {
-                    items: [
-                        'heading', '|',
-                        'bold', 'italic', 'underline', 'strikethrough', '|',
-                        'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-                        'numberedList', 'bulletedList', '|',
-                        'outdent', 'indent', '|',
-                        'alignment', '|',
-                        'link', 'insertTable', '|',
-                        'blockQuote', 'insertImage', '|',
-                        'undo', 'redo', '|',
-                        'sourceEditing'
-                    ]
-                },
-                language: 'id',
-                list: {
-                    properties: {
-                        styles: true,
-                        startIndex: true,
-                        reversed: true
-                    }
-                },
-                heading: {
-                    options: [
-                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                    ]
-                },
-                fontSize: {
-                    options: [
-                        9,
-                        11,
-                        13,
-                        'default',
-                        17,
-                        19,
-                        21
-                    ]
-                },
-                alignment: {
-                    options: [ 'left', 'right', 'center', 'justify' ]
-                },
-                image: {
-                    toolbar: [
-                        'imageTextAlternative',
-                        'imageStyle:inline',
-                        'imageStyle:block',
-                        'imageStyle:side'
-                    ]
-                },
-                table: {
-                    contentToolbar: [
-                        'tableColumn',
-                        'tableRow',
-                        'mergeTableCells'
-                    ]
-                }
-            };
 
             // Initialize CKEditor for Add Modal
             ClassicEditor
@@ -419,7 +446,7 @@
                 showAlert('error', "{{ session('error') }}");
             @endif
 
-            @if($errors->any()))
+            @if($errors->any())
                 let errorMessages = [];
                 @foreach($errors->all() as $error)
                     errorMessages.push('{{ $error }}');
@@ -537,44 +564,157 @@
             document.getElementById('addModal').classList.add('hidden');
         }
 
-        function openEditModal(button) {
-            const data = JSON.parse(button.getAttribute('data-item'));
-            const form = document.getElementById('editForm');
+function openEditModal(button) {
+    const slider = JSON.parse(button.dataset.item);
+    const wrapper = document.getElementById('extraImagesWrapperEdit');
+    wrapper.innerHTML = '';
 
-            form.action = `/ourblogs/${data.id}`;
-            document.getElementById('editTitle').value = data.title;
-            document.getElementById('editPubDate').value = data.pub_date.split(' ')[0];
-            document.getElementById('editCategory').value = data.category_id;
-            document.getElementById('editWaktuBaca').value = data.waktu_baca || '';
+    /* ===============================
+       🔥 BUKA MODAL DULU (PENTING)
+    =============================== */
+    document.getElementById('editModal').classList.remove('hidden');
 
-            // Set description content in CKEditor
-            if (editDescriptionEditor) {
-                editDescriptionEditor.setData(data.description || '');
-            }
+    /* ===============================
+       DATA UTAMA BLOG
+    =============================== */
+    document.getElementById('editTitle').value = slider.title || '';
+    document.getElementById('editPubDate').value = slider.pub_date
+        ? slider.pub_date.split(' ')[0]
+        : '';
+    document.getElementById('editCategory').value = slider.category_id || '';
+    document.getElementById('editWaktuBaca').value = slider.waktu_baca || '';
 
-            // Handle image preview
-            const editPreview = document.getElementById('editPreview');
-            const editUploadArea = document.getElementById('editUploadArea');
+    /* ===============================
+       🔥 RESET CKEDITOR EDIT UTAMA
+    =============================== */
+    if (editDescriptionEditor) {
+        editDescriptionEditor.destroy();
+        editDescriptionEditor = null;
+    }
 
-            if (data.image) {
-                editPreview.innerHTML = `
-                    <div class="relative inline-block">
-                        <img src="/storage/${data.image}" class="h-32 w-32 rounded-lg shadow-md object-cover border" alt="Current image">
-                        <button type="button" onclick="removeCurrentImage('edit')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                editUploadArea.style.display = 'none';
-            } else {
-                editPreview.innerHTML = '';
-                editUploadArea.style.display = 'block';
-            }
+    setTimeout(() => {
+        ClassicEditor.create(
+            document.querySelector('#editorEditDescription'),
+            editorConfig
+        ).then(editor => {
+            editDescriptionEditor = editor;
+            editor.setData(slider.description || '');
 
-            document.getElementById('editModal').classList.remove('hidden');
-        }
+            editor.model.document.on('change:data', () => {
+                document.querySelector('#editorEditDescription').value =
+                    editor.getData();
+            });
+        }).catch(err => console.error(err));
+    }, 150);
+
+    /* ===============================
+       FOTO TAMBAHAN
+    =============================== */
+    if (Array.isArray(slider.extra_images) && slider.extra_images.length > 0) {
+        slider.extra_images.forEach(img => {
+            const index = img.id;
+
+            const div = document.createElement('div');
+            div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+            div.id = `extra-wrapper-${index}`;
+
+
+            div.innerHTML = `
+                <button type="button"
+        onclick="removeExtraEdit(this, ${index})"
+        class="absolute top-2 right-2 text-red-500 font-bold">
+        ✕
+    </button>
+
+              <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
+
+              <input type="file"
+                accept="image/*"
+                name="extra_images[${index}]"
+                id="extraInput_${index}"
+                class="hidden"
+                onchange="previewExtraReplace(this, ${index})">
+
+              <div onclick="document.getElementById('extraInput_${index}').click()"
+                class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer">
+                Klik atau drag foto ke sini (replace)
+              </div>
+
+              <div id="extraPreview_${index}" class="mt-3">
+                <img src="/storage/${img.image}" class="w-20 h-20 object-cover rounded border">
+              </div>
+
+              <label class="block text-sm font-medium mt-3">Judul</label>
+              <input type="text"
+                name="extra_titles[${index}]"
+                value="${img.title ?? ''}"
+                class="w-full border rounded p-2 text-sm mb-2">
+
+              <label class="block text-sm font-medium">Subtitle</label>
+              <textarea
+                name="extra_subtitles[${index}]"
+                id="extraEditEditor_${index}"
+                class="w-full border rounded p-2 text-sm"
+                rows="3">${img.subtitle ?? ''}</textarea>
+            `;
+
+            wrapper.appendChild(div);
+            setTimeout(() => {
+    const textarea = div.querySelector(
+        `textarea[name="extra_subtitles[${index}]"]`
+    );
+
+    if (!textarea) return;
+
+    ClassicEditor.create(textarea, editorConfig)
+        .then(editor => {
+            extraEditEditors[index] = editor;
+
+            editor.model.document.on('change:data', () => {
+                textarea.value = editor.getData();
+            });
+        })
+        .catch(err => console.error(err));
+}, 50);
+
+        });
+
+        /* ===============================
+           🔥 INIT CKEDITOR EXTRA SUBTITLE
+        =============================== */
+        setTimeout(() => {
+            slider.extra_images.forEach(img => {
+                const index = img.id;
+                const el = document.getElementById(`extraEditEditor_${index}`);
+
+                if (!el) return;
+
+                ClassicEditor.create(el, editorConfig)
+                    .then(editor => {
+                        extraEditEditors[index] = editor;
+                        editor.model.document.on('change:data', () => {
+                            el.value = editor.getData();
+                        });
+                    })
+                    .catch(err => console.error(err));
+            });
+        }, 200);
+
+    } else {
+        wrapper.innerHTML =
+            `<p class="text-sm text-gray-500 italic">Belum ada foto tambahan</p>`;
+    }
+
+    /* ===============================
+       PREVIEW GAMBAR UTAMA
+    =============================== */
+    const editPreview = document.getElementById('editPreview');
+    editPreview.innerHTML = slider.image
+        ? `<img src="/storage/${slider.image}" class="h-32 w-32 rounded border">`
+        : '';
+
+    document.getElementById('editForm').action = `/ourblogs/${slider.id}`;
+}
 
         function closeEditModal() {
             document.getElementById('editModal').classList.add('hidden');
@@ -602,6 +742,25 @@
             checkboxes.forEach(cb => cb.checked = this.checked);
             updateBulkDeleteButton();
         });
+        function previewExtraReplace(input, index) {
+  if (!input.files[0]) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById(`extraPreview_${index}`).innerHTML = `
+      <img src="${e.target.result}"
+           class="w-20 h-20 object-cover rounded border">
+    `;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function handleExtraDropReplace(e, index) {
+  e.preventDefault();
+  const input = document.getElementById(`extraInput_${index}`);
+  input.files = e.dataTransfer.files;
+  previewExtraReplace(input, index);
+}
 
         function previewImage(input, previewId) {
             const preview = document.getElementById(previewId);
@@ -734,4 +893,138 @@
             });
         }
     </script>
+    <script>
+let extraAddIndex = 0;
+
+function addExtraImageAdd() {
+  const wrapper = document.getElementById('extraImagesWrapperAdd');
+  const index = 'new_' + extraAddIndex++;
+
+  const div = document.createElement('div');
+  div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+  div.innerHTML = `
+    <button type="button"
+      onclick="this.parentElement.remove()"
+      class="absolute top-2 right-2 text-red-500">✕</button>
+
+    <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
+
+    <input
+      type="file"
+      accept="image/*"
+      name="extra_images[${index}]"
+      id="extraInput_${index}"
+      class="hidden"
+      onchange="previewExtraReplace(this, '${index}')"
+    >
+
+    <div
+      onclick="document.getElementById('extraInput_${index}').click()"
+      class="border-2 border-dashed border-gray-300 rounded-lg p-6
+             text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50">
+      Klik untuk upload foto
+    </div>
+
+    <div id="extraPreview_${index}" class="mt-3"></div>
+
+    <label class="block text-sm font-medium mt-3">Judul</label>
+    <input type="text"
+      name="extra_titles[${index}]"
+      class="w-full border rounded p-2 text-sm mb-2">
+
+    <label class="block text-sm font-medium">Subtitle</label>
+    <textarea
+      name="extra_subtitles[${index}]"
+      class="w-full border rounded p-2 text-sm"
+      rows="3"></textarea>
+  `;
+
+  wrapper.appendChild(div);
+}
+</script>
+<script>
+let extraEditIndex = 0;
+
+function addExtraImageEdit() {
+    const wrapper = document.getElementById('extraImagesWrapperEdit');
+    const index = 'new_edit_' + extraEditIndex++;
+
+    const div = document.createElement('div');
+    div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+    div.innerHTML = `
+        <button type="button"
+            onclick="this.parentElement.remove()"
+            class="absolute top-2 right-2 text-red-500">✕</button>
+
+        <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
+
+        <input
+            type="file"
+            accept="image/*"
+            name="extra_images[${index}]"
+            id="extraInput_${index}"
+            class="hidden"
+            onchange="previewExtraReplace(this, '${index}')"
+        >
+
+        <div
+            onclick="document.getElementById('extraInput_${index}').click()"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6
+                   text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50">
+            Klik untuk upload foto
+        </div>
+
+        <div id="extraPreview_${index}" class="mt-3"></div>
+
+        <label class="block text-sm font-medium mt-3">Judul</label>
+        <input type="text"
+            name="extra_titles[${index}]"
+            class="w-full border rounded p-2 text-sm mb-2">
+
+        <label class="block text-sm font-medium">Subtitle</label>
+        <textarea
+            name="extra_subtitles[${index}]"
+            id="extraEditEditor_${index}"
+            class="w-full border rounded p-2 text-sm"
+            rows="3"></textarea>
+    `;
+
+    wrapper.appendChild(div);
+
+    /* ===============================
+       ✅ INIT CKEDITOR (INI KUNCI)
+    =============================== */
+    ClassicEditor.create(
+        document.querySelector(`#extraEditEditor_${index}`),
+        editorConfig
+    ).then(editor => {
+        editor.model.document.on('change:data', () => {
+            document.querySelector(`#extraEditEditor_${index}`).value = editor.getData();
+        });
+    }).catch(err => {
+        console.error('CKEditor extra edit error:', err);
+    });
+}
+
+</script>
+<script>
+function removeExtraEdit(button, id) {
+    // hapus form dari UI
+    const wrapper = button.closest('.border');
+    if (wrapper) wrapper.remove();
+
+    // simpan ID yg mau dihapus
+    const deletedWrapper = document.getElementById('deletedExtraWrapper');
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'delete_extra_ids[]';
+    input.value = id;
+
+    deletedWrapper.appendChild(input);
+}
+</script>
+
 @endsection

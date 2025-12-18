@@ -108,7 +108,7 @@
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-3">Konten Berita</h3>
                         <div class="prose prose-gray max-w-none">
-                            <div class="text-gray-700 leading-relaxed">{!! $blog->description !!}</div>
+                            <div class="prose max-w-none">{!! $blog->description !!}</div>
                         </div>
                     </div>
 
@@ -147,5 +147,46 @@
                 </div>
             </div>
         </div>
+       {{-- GALERI FOTO TAMBAHAN --}}
+@if ($blog->extraImages && $blog->extraImages->count())
+    <div class="mt-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Galeri Foto
+        </h3>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            @foreach ($blog->extraImages as $img)
+                <div class="rounded-xl border bg-white shadow-sm overflow-hidden">
+                    
+                    {{-- GAMBAR --}}
+                    <img
+                        src="{{ asset('storage/' . $img->image) }}"
+                        alt="{{ $img->title ?? 'Foto tambahan' }}"
+                        class="w-full h-40 object-cover"
+                    >
+
+                    {{-- TEKS DI LUAR GAMBAR --}}
+                    @if ($img->title || $img->subtitle)
+                        <div class="p-3">
+                            @if ($img->title)
+                                <p class="text-sm font-semibold text-gray-900 mb-1">
+                                    {{ $img->title }}
+                                </p>
+                            @endif
+
+                            @if ($img->subtitle)
+                                <div class="text-xs text-gray-600 leading-snug prose prose-sm max-w-none">
+                                    {!! $img->subtitle !!}
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+
     </div>
 @endsection
