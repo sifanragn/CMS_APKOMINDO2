@@ -65,6 +65,10 @@ Route::get('/storage/{path}', function ($path) {
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 Route::get('/slider-preview', [SliderController::class, 'showHomeSlider'])->name('slider.preview');
+Route::get('/slider/{slider}', [SliderController::class, 'show'])->name('slider.show');
+Route::put('/slider/{slider}', [SliderController::class, 'update']) ->name('slider.update');
+
+
 
 Route::get('/profile-setting', [ProfileSettingController::class, 'index'])->name('profile-setting');
 

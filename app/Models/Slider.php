@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\SliderImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -40,5 +41,10 @@ class Slider extends Model
     public function scopeDisplayOnHome($query)
     {
         return $query->where('display_on_home', true);
+    }
+
+    public function extraImages()
+    {
+        return $this->hasMany(SliderImage::class, 'slider_id');
     }
 }

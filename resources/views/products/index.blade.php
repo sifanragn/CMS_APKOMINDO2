@@ -767,7 +767,7 @@
                             </button>
                         </div>
                     `;
-                    uploadArea.style.display = 'none';
+                    uploadArea.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             } else {

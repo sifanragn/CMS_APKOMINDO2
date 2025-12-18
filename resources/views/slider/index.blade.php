@@ -67,16 +67,27 @@
 
                     {{-- ACTION --}}
                     <td class="px-4 py-3 space-x-1">
-                        <button onclick="openEditModal(this)" data-slider='@json($item)'
-                            class="px-3 py-1 text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100">
-                            Edit
-                        </button>
+                    <a href="{{ route('slider.show', $item->id) }}"
+                    class="px-3 py-1 text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 rounded hover:bg-indigo-100">
+                        Detail
+                    </a>
 
-                        <button onclick="confirmDelete({{ $item->id }})"
-                            class="px-3 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">
-                            Hapus
-                        </button>
-                    </td>
+                    <button
+  onclick="openEditModal(this)"
+    data-slider='@json($item->load("extraImages")->toArray())'
+
+  class="px-3 py-1 text-xs bg-blue-50 text-blue-600 border rounded"
+>
+  Edit
+</button>
+
+
+                    <button onclick="confirmDelete({{ $item->id }})"
+                        class="px-3 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">
+                        Hapus
+                    </button>
+                </td>
+
 
                 </tr>
             @empty
@@ -99,183 +110,205 @@
     </form>
 
     <!-- Modal Tambah -->
-    <div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
-            <h2 class="text-lg font-semibold">Tambah Slider</h2>
-            <form action="{{ route('slider.store') }}" method="POST" enctype="multipart/form-data" id="addForm">
-                @csrf
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="flex items-center">
-                            <input type="checkbox" name="display_on_home" class="mr-2" value="1"
-                                {{ old('display_on_home') ? 'checked' : '' }} />
-                            <span class="font-medium">Tampilkan di Homepage</span>
-                        </label>
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">Judul</label>
-                        <input type="text" name="title" class="w-full border rounded p-2 text-sm"
-                            value="{{ old('title') }}" />
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">YouTube ID</label>
-                        <input type="text" name="youtube_id" class="w-full border rounded p-2 text-sm"
-                            placeholder="Contoh: dQw4w9WgXcQ" value="{{ old('youtube_id') }}" />
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block mb-1 font-medium">Subtitle</label>
-                        <textarea name="subtitle" id="editorAddSubtitle" rows="4" class="w-full border rounded p-2 text-sm">{{ old('subtitle') }}</textarea>
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">Button Text</label>
-                        <input type="text" name="button_text" class="w-full border rounded p-2 text-sm"
-                            placeholder="Contoh: Selengkapnya" value="{{ old('button_text') }}" />
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">URL Link</label>
-                        <input type="url" name="url_link" class="w-full border rounded p-2 text-sm"
-                            placeholder="https://example.com" value="{{ old('url_link') }}" />
-                    </div>
-                </div>
+<div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
+    <h2 class="text-lg font-semibold">Tambah Slider</h2>
 
-                <!-- Enhanced Image Upload Section -->
-                <div class="mt-4">
-                    <label class="block mb-2 font-medium">Upload Gambar</label>
-                    <div class="relative">
-                        <input type="file" name="image" id="addImageInput" onchange="previewImage(this, 'addPreview')"
-                            accept="image/png,image/jpg,image/jpeg,image/webp" class="hidden" />
+    <form action="{{ route('slider.store') }}" method="POST" enctype="multipart/form-data" id="addForm">
+      @csrf
 
-                        <div id="addUploadArea" onclick="document.getElementById('addImageInput').click()"
-                            class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                <p class="text-gray-600 mb-2">Klik untuk upload atau drag and drop</p>
-                                <p class="text-sm text-gray-500">PNG, JPG, JPEG, atau WEBP (MAX. 2MB)</p>
-                            </div>
-                        </div>
-
-                        <div id="addPreview" class="mt-4"></div>
-                    </div>
-                </div>
-
-                <div class="flex justify-end space-x-2 mt-6">
-                    <button type="button" onclick="closeAddModal()"
-                        class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
-                    <button type="submit" id="addSubmitBtn"
-                        class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">Simpan</button>
-                </div>
-            </form>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="flex items-center">
+            <input type="checkbox" name="display_on_home" class="mr-2" value="1" {{ old('display_on_home') ? 'checked' : '' }}/>
+            <span class="font-medium">Tampilkan di Homepage</span>
+          </label>
         </div>
-    </div>
+
+        <div>
+          <label class="block mb-1 font-medium">Judul</label>
+          <input type="text" name="title" class="w-full border rounded p-2 text-sm" value="{{ old('title') }}"/>
+        </div>
+
+        <div>
+          <label class="block mb-1 font-medium">YouTube ID</label>
+          <input type="text" name="youtube_id" class="w-full border rounded p-2 text-sm" placeholder="Contoh: dQw4w9WgXcQ" value="{{ old('youtube_id') }}"/>
+        </div>
+
+        <div class="col-span-2">
+          <label class="block mb-1 font-medium">Subtitle</label>
+          <textarea name="subtitle" id="editorAddSubtitle" rows="4" class="w-full border rounded p-2 text-sm">{{ old('subtitle') }}</textarea>
+        </div>
+
+        <div>
+          <label class="block mb-1 font-medium">Button Text</label>
+          <input type="text" name="button_text" class="w-full border rounded p-2 text-sm" placeholder="Contoh: Selengkapnya" value="{{ old('button_text') }}"/>
+        </div>
+
+        <div>
+          <label class="block mb-1 font-medium">URL Link</label>
+          <input type="url" name="url_link" class="w-full border rounded p-2 text-sm" placeholder="https://example.com" value="{{ old('url_link') }}"/>
+        </div>
+      </div>
+
+      <!-- Upload Gambar -->
+      <div class="mt-4">
+        <label class="block mb-2 font-medium">Upload Gambar</label>
+
+        <input type="file" name="image" id="addImageInput" onchange="previewImage(this, 'addPreview')"
+               accept="image/png,image/jpg,image/jpeg,image/webp" class="hidden" />
+
+        <div id="addUploadArea" onclick="document.getElementById('addImageInput').click()"
+             class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200">
+          <div class="flex flex-col items-center">
+            <p class="text-gray-600 mb-2">Klik untuk upload atau drag and drop</p>
+            <p class="text-sm text-gray-500">PNG, JPG, JPEG, atau WEBP (MAX. 2MB)</p>
+          </div>
+        </div>
+
+        <div id="addPreview" class="mt-4"></div>
+      </div>
+
+      <hr class="my-6">
+
+      <!-- Foto Tambahan -->
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm">Foto Tambahan</h3>
+        <button type="button" onclick="addExtraImage()"
+                class="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100">
+          + Tambah Foto
+        </button>
+      </div>
+
+      <div id="extraImagesWrapper" class="space-y-4"></div>
+
+      <!-- Action -->
+      <div class="flex justify-end space-x-2 mt-6">
+        <button type="button" onclick="closeAddModal()"
+                class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+
+        <button type="button" onclick="submitAddForm()"
+                class="px-4 py-2 rounded bg-blue-500 text-white">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 
     <!-- Modal Edit -->
-    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
-            <h2 class="text-lg font-semibold">Edit Slider</h2>
-            <form id="editForm" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="flex items-center">
-                            <input type="checkbox" name="display_on_home" id="editDisplayOnHome" class="mr-2"
-                                value="1" />
-                            <span class="font-medium">Tampilkan di Homepage</span>
-                        </label>
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">Judul</label>
-                        <input type="text" name="title" id="editTitle" class="w-full border rounded p-2 text-sm" />
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">YouTube ID</label>
-                        <input type="text" name="youtube_id" id="editYoutubeId"
-                            class="w-full border rounded p-2 text-sm" placeholder="Contoh: dQw4w9WgXcQ" />
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block mb-1 font-medium">Subtitle</label>
-                        <textarea name="subtitle" id="editorEditSubtitle" rows="4" class="w-full border rounded p-2 text-sm"></textarea>
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">Button Text</label>
-                        <input type="text" name="button_text" id="editButtonText"
-                            class="w-full border rounded p-2 text-sm" placeholder="Contoh: Selengkapnya" />
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-medium">URL Link</label>
-                        <input type="url" name="url_link" id="editUrlLink" class="w-full border rounded p-2 text-sm"
-                            placeholder="https://example.com" />
-                    </div>
+<div id="editModal"
+     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
+        <h2 class="text-lg font-semibold">Edit Slider</h2>
+
+        <form id="editForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
+            <!-- ===== BASIC FIELD ===== -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="display_on_home" id="editDisplayOnHome"
+                               class="mr-2" value="1">
+                        <span class="font-medium">Tampilkan di Homepage</span>
+                    </label>
                 </div>
 
-                <!-- Enhanced Image Upload Section -->
-                <div class="mt-4">
-                    <label class="block mb-2 font-medium">Ganti Gambar</label>
-                    <div class="relative">
-                        <input type="file" name="image" id="editImageInput"
-                            onchange="previewImage(this, 'editPreview')"
-                            accept="image/png,image/jpg,image/jpeg,image/webp" class="hidden" />
-
-                        <div id="editUploadArea" onclick="document.getElementById('editImageInput').click()"
-                            class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                <p class="text-gray-600 mb-2">Klik untuk upload atau drag and drop</p>
-                                <p class="text-sm text-gray-500">PNG, JPG, JPEG, atau WEBP (MAX. 2MB)</p>
-                            </div>
-                        </div>
-
-                        <div id="editPreview" class="mt-4"></div>
-                    </div>
+                <div>
+                    <label class="block mb-1 font-medium">Judul</label>
+                    <input type="text" name="title" id="editTitle"
+                           class="w-full border rounded p-2 text-sm">
                 </div>
 
-                <div class="flex justify-end space-x-2 mt-6">
-                    <button type="button" onclick="closeEditModal()"
-                        class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
-                    <button type="submit" id="editSubmitBtn"
-                        class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">Simpan</button>
+                <div>
+                    <label class="block mb-1 font-medium">YouTube ID</label>
+                    <input type="text" name="youtube_id" id="editYoutubeId"
+                           class="w-full border rounded p-2 text-sm">
                 </div>
-            </form>
-        </div>
+
+                <div class="col-span-2">
+                    <label class="block mb-1 font-medium">Subtitle</label>
+                    <textarea name="subtitle" id="editorEditSubtitle"
+                              class="w-full border rounded p-2 text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block mb-1 font-medium">Button Text</label>
+                    <input type="text" name="button_text" id="editButtonText"
+                           class="w-full border rounded p-2 text-sm">
+                </div>
+
+                <div>
+                    <label class="block mb-1 font-medium">URL Link</label>
+                    <input type="url" name="url_link" id="editUrlLink"
+                           class="w-full border rounded p-2 text-sm">
+                </div>
+            </div>
+
+            <!-- ===== IMAGE UTAMA ===== -->
+            <div class="mt-4">
+                <label class="block mb-2 font-medium">Ganti Gambar Utama</label>
+
+                <input type="file" name="image" id="editImageInput"
+                       accept="image/*" class="hidden"
+                       onchange="previewImage(this,'editPreview')">
+
+                <div id="editUploadArea"
+                     onclick="document.getElementById('editImageInput').click()"
+                     class="border-2 border-dashed border-gray-300 rounded-lg p-6
+                            text-center cursor-pointer hover:bg-blue-50">
+                    Klik untuk upload gambar
+                </div>
+
+                <div id="editPreview" class="mt-3"></div>
+            </div>
+
+            <hr class="my-6">
+
+           <!-- ===== FOTO TAMBAHAN ===== -->
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold text-sm">Foto Tambahan</h3>
+                    <button type="button"
+                            onclick="addExtraImageEdit()"
+                            class="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100">
+                        + Tambah Foto
+                    </button>
+                </div>
+
+
+    <!-- FORM FOTO BARU (MUNCUL JIKA + Tambah Foto) -->
+    <div id="extraImagesWrapperEdit" class="space-y-4 mt-4"></div>
+
+
+            <!-- ACTION -->
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button"
+                        onclick="closeEditModal()"
+                        class="px-4 py-2 bg-gray-300 rounded">
+                    Batal
+                </button>
+                <button type="submit"
+                        id="editSubmitBtn"
+                        class="px-4 py-2 bg-blue-500 text-white rounded">
+                    Simpan
+                </button>
+
+            </div>
+        </form>
     </div>
+</div>
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- CKEditor -->
     <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
-
-    <script>
-        // Global variables for CKEditor instances
-        let addSubtitleEditor = null;
-        let editSubtitleEditor = null;
-
-        // SweetAlert helper functions
-        function showAlert(type, message) {
-            Swal.fire({
-                icon: type,
-                title: type === 'success' ? 'Berhasil!' : type === 'error' ? 'Error!' : 'Info',
-                text: message,
-                timer: 3000,
-                showConfirmButton: false
-            });
-        }
-
-        // Initialize CKEditor when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setupDragAndDrop();
-
-            // Enhanced configuration for CKEditor with more features
-            const editorConfig = {
+<script>
+/* =============================
+   GLOBAL CKEDITOR CONFIG
+============================= */
+const editorConfig = {
                 toolbar: {
                     items: [
                         'heading', '|',
@@ -337,6 +370,28 @@
                 }
             };
 
+</script>
+
+    <script>
+        // Global variables for CKEditor instances
+        let addSubtitleEditor = null;
+        let editSubtitleEditor = null;
+
+        // SweetAlert helper functions
+        function showAlert(type, message) {
+            Swal.fire({
+                icon: type,
+                title: type === 'success' ? 'Berhasil!' : type === 'error' ? 'Error!' : 'Info',
+                text: message,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        // Initialize CKEditor when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDragAndDrop();
+            
             // Initialize CKEditor for Add Modal
             ClassicEditor
                 .create(document.querySelector('#editorAddSubtitle'), editorConfig)
@@ -386,14 +441,7 @@
                 showAlert('error', errorMessages.join('\n'));
             @endif
 
-            // Form submission handlers
-            const addForm = document.getElementById('addForm');
-            if (addForm) {
-                addForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    handleFormSubmission('add');
-                });
-            }
+
 
             const editForm = document.getElementById('editForm');
             if (editForm) {
@@ -405,110 +453,74 @@
         });
 
         // Handle form submission with proper AJAX response handling
-        function handleFormSubmission(type) {
-            const isAdd = type === 'add';
-            const form = document.getElementById(isAdd ? 'addForm' : 'editForm');
-            const subtitleEditor = isAdd ? addSubtitleEditor : editSubtitleEditor;
-            const submitBtn = document.getElementById(isAdd ? 'addSubmitBtn' : 'editSubmitBtn');
+        function handleFormSubmission() {
+    const form = document.getElementById('editForm');
+    const subtitleEditor = editSubtitleEditor;
+    const submitBtn = document.getElementById('editSubmitBtn');
 
-            if (!form || !submitBtn) {
-                console.error('Form or submit button not found');
-                return;
-            }
+    if (!form || !submitBtn) return;
 
-            // Show loading
-            Swal.fire({
-                title: 'Menyimpan data...',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+    Swal.fire({
+        title: 'Menyimpan data...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+    });
 
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = 'Menyimpan...';
+    submitBtn.disabled = true;
 
-            try {
-                // Create FormData
-                const formData = new FormData(form);
+    const formData = new FormData(form);
 
-                // Add CKEditor data for subtitle
-                if (subtitleEditor) {
-                    formData.set('subtitle', subtitleEditor.getData());
-                }
+    if (subtitleEditor) {
+        formData.set('subtitle', subtitleEditor.getData());
+    }
 
-                // Submit using fetch
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
-                    }
-                })
-                .then(response => {
-                    return response.json().then(data => {
-                        return {
-                            ok: response.ok,
-                            status: response.status,
-                            data: data
-                        };
-                    });
-                })
-                .then(result => {
-                    Swal.close();
-
-                    if (result.ok && result.data.success) {
-                        // Success
-                        if (isAdd) {
-                            closeAddModal();
-                        } else {
-                            closeEditModal();
-                        }
-
-                        showAlert('success', result.data.message);
-
-                        // Reload page after delay
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        // Error
-                        let errorMessage = result.data.message || 'Terjadi kesalahan saat menyimpan data';
-
-                        // Handle validation errors
-                        if (result.data.errors) {
-                            const errors = Object.values(result.data.errors).flat();
-                            errorMessage = errors.join('\n');
-                        }
-
-                        showAlert('error', errorMessage);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.close();
-                    showAlert('error', 'Terjadi kesalahan saat menyimpan data');
-                })
-                .finally(() => {
-                    // Re-enable submit button
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Simpan';
-                });
-
-            } catch (error) {
-                console.error('Form preparation error:', error);
-                Swal.close();
-                showAlert('error', 'Terjadi kesalahan saat memproses data');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Simpan';
-            }
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute('content')
         }
+    })
+    .then(res => res.json())
+    .then(result => {
+        Swal.close();
 
+        if (result.success) {
+            showAlert('success', result.message);
+            setTimeout(() => location.reload(), 800);
+        } else {
+            showAlert('error', result.message || 'Gagal menyimpan');
+        }
+    })
+    .catch(() => {
+        Swal.close();
+        showAlert('error', 'Terjadi kesalahan');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+    });
+}
+
+        
         function openAddModal() {
+                // TUTUP EDIT MODAL JIKA ADA
+    document.getElementById('editModal').classList.add('hidden');
+
+    // reset form
+    document.getElementById('addForm').reset();
+    document.getElementById('addPreview').innerHTML = '';
+    document.getElementById('addUploadArea').style.display = 'block';
+
+    if (addSubtitleEditor) {
+        addSubtitleEditor.setData('');
+    }
+
+    document.getElementById('addModal').classList.remove('hidden');
+        
             // Reset form
             document.getElementById('addForm').reset();
             document.getElementById('addPreview').innerHTML = '';
@@ -526,50 +538,108 @@
         function closeAddModal() {
             document.getElementById('addModal').classList.add('hidden');
         }
+        
+      function openEditModal(button) {
+  const slider = JSON.parse(button.dataset.slider);
+  const wrapper = document.getElementById('extraImagesWrapperEdit');
+  wrapper.innerHTML = '';
 
-        function openEditModal(button) {
-            const slider = JSON.parse(button.getAttribute('data-slider'));
+  /* ===============================
+     DATA TAMBAHAN (WAJIB MUNCUL)
+  =============================== */
+  if (Array.isArray(slider.extra_images) && slider.extra_images.length > 0) {
 
-            // Set form action
-            const form = document.getElementById('editForm');
-            form.action = `/slider/${slider.id}`;
+    slider.extra_images.forEach(img => {
+      const index = img.id;
 
-            // Populate form fields
-            document.getElementById('editTitle').value = slider.title || '';
-            document.getElementById('editYoutubeId').value = slider.youtube_id || '';
-            document.getElementById('editButtonText').value = slider.button_text || '';
-            document.getElementById('editUrlLink').value = slider.url_link || '';
-            document.getElementById('editDisplayOnHome').checked = slider.display_on_home || false;
+      const div = document.createElement('div');
+      div.className = 'border rounded-lg p-4 bg-gray-50 relative';
 
-            // Set subtitle content in CKEditor
-            if (editSubtitleEditor) {
-                editSubtitleEditor.setData(slider.subtitle || '');
-            }
+      div.innerHTML = `
+        <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
 
-            // Handle image preview
-            const editPreview = document.getElementById('editPreview');
-            const editUploadArea = document.getElementById('editUploadArea');
+        <!-- INPUT FILE (OPTIONAL, UNTUK REPLACE) -->
+        <input type="file"
+          name="extra_images[${index}]"
+          id="extraInput_${index}"
+          class="hidden"
+          accept="image/*"
+          onchange="previewExtraReplace(this, ${index})">
 
-            if (slider.image) {
-                editPreview.innerHTML = `
-                    <div class="relative inline-block">
-                        <img src="/storage/${slider.image}" class="h-32 w-32 rounded-lg shadow-md object-cover border" alt="Current image">
-                        <button type="button" onclick="removeCurrentImage('edit')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                editUploadArea.style.display = 'none';
-            } else {
-                editPreview.innerHTML = '';
-                editUploadArea.style.display = 'block';
-            }
+        <div
+          onclick="document.getElementById('extraInput_${index}').click()"
+          class="border-2 border-dashed border-gray-300 rounded-lg p-6
+                 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50">
+          Klik untuk ganti foto
+        </div>
 
-            // Show modal
-            document.getElementById('editModal').classList.remove('hidden');
-        }
+        <!-- PREVIEW FOTO (DEFAULT = FOTO LAMA) -->
+        <div id="extraPreview_${index}" class="mt-3">
+          <img src="/storage/${img.image}"
+               class="w-20 h-20 object-cover rounded border">
+        </div>
+
+        <label class="block text-sm font-medium mt-3">Judul</label>
+        <input type="text"
+          name="extra_titles[${index}]"
+          value="${img.title ?? ''}"
+          class="w-full border rounded p-2 text-sm mb-2">
+
+        <label class="block text-sm font-medium">Subtitle</label>
+        <textarea
+          name="extra_subtitles[${index}]"
+          id="extraEditEditor_${index}"
+          class="w-full border rounded p-2 text-sm"
+          rows="3">${img.subtitle ?? ''}</textarea>
+      `;
+
+      wrapper.appendChild(div);
+
+      ClassicEditor.create(
+        document.querySelector(`#extraEditEditor_${index}`),
+        editorConfig
+      ).then(editor => {
+        editor.model.document.on('change:data', () => {
+          document.querySelector(`#extraEditEditor_${index}`).value = editor.getData();
+        });
+      });
+    });
+
+  } else {
+    wrapper.innerHTML = `
+      <p class="text-sm text-gray-500 italic">
+        Belum ada foto tambahan
+      </p>
+    `;
+  }
+
+  /* ===============================
+     DATA UTAMA (SUDAH BENAR)
+  =============================== */
+  document.getElementById('editTitle').value = slider.title || '';
+  document.getElementById('editYoutubeId').value = slider.youtube_id || '';
+  document.getElementById('editButtonText').value = slider.button_text || '';
+  document.getElementById('editUrlLink').value = slider.url_link || '';
+  document.getElementById('editDisplayOnHome').checked = !!slider.display_on_home;
+
+  if (editSubtitleEditor) {
+    editSubtitleEditor.setData(slider.subtitle || '');
+  }
+
+  /* GAMBAR UTAMA */
+  const editPreview = document.getElementById('editPreview');
+  editPreview.innerHTML = slider.image
+    ? `<img src="/storage/${slider.image}" class="h-32 w-32 rounded border">`
+    : '';
+/* ===============================
+   SET FORM ACTION (WAJIB)
+=============================== */
+const form = document.getElementById('editForm');
+form.action = `/slider/${slider.id}`;
+
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
 
         function closeEditModal() {
             document.getElementById('editModal').classList.add('hidden');
@@ -710,48 +780,51 @@
         }
 
         function previewImage(input, previewId) {
-            const preview = document.getElementById(previewId);
-            const uploadAreaId = previewId === 'addPreview' ? 'addUploadArea' : 'editUploadArea';
-            const uploadArea = document.getElementById(uploadAreaId);
+    const preview = document.getElementById(previewId);
+    const uploadAreaId = previewId === 'addPreview' ? 'addUploadArea' : 'editUploadArea';
+    const uploadArea = document.getElementById(uploadAreaId);
 
-            preview.innerHTML = '';
+    preview.innerHTML = '';
 
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
 
-                // Validate file type
-                if (!file.type.match('image.*')) {
-                    showAlert('error', 'File harus berupa gambar (PNG/JPG/JPEG/WEBP)');
-                    input.value = '';
-                    return;
-                }
-
-                // Validate file size (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    showAlert('error', 'Ukuran file maksimal 2MB');
-                    input.value = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `
-                        <div class="relative inline-block">
-                            <img src="${e.target.result}" class="h-32 w-32 rounded-lg shadow-md object-cover border" alt="Preview">
-                            <button type="button" onclick="removeCurrentImage('${previewId === 'addPreview' ? 'add' : 'edit'}')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-                    uploadArea.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                uploadArea.style.display = 'block';
-            }
+        // validate type
+        if (!file.type.startsWith('image/')) {
+            showAlert('error', 'File harus berupa gambar');
+            input.value = '';
+            return;
         }
+
+        // validate size
+        if (file.size > 2 * 1024 * 1024) {
+            showAlert('error', 'Ukuran maksimal 2MB');
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.innerHTML = `
+                <div class="relative inline-block">
+                    <img src="${e.target.result}"
+                        class="h-32 w-32 rounded-lg shadow-md object-cover border">
+                    <button type="button"
+                        onclick="removeCurrentImage('${previewId === 'addPreview' ? 'add' : 'edit'}')"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white
+                               rounded-full w-6 h-6 flex items-center justify-center">
+                        ✕
+                    </button>
+                </div>
+            `;
+            uploadArea.style.display = 'block';
+        };
+
+        reader.readAsDataURL(file);
+    } else {
+        uploadArea.style.display = 'block';
+    }
+}
 
         function toggleSliderDisplay(id, checkbox) {
     fetch(`/slider/toggle/${id}`, {
@@ -785,8 +858,327 @@
         checkbox.checked = !checkbox.checked; // undo
     });
 }
-
     </script>
+<script>
+let extraIndex = 0;
+
+function addExtraImage() {
+  const wrapper = document.getElementById('extraImagesWrapper');
+  const index = extraIndex++;
+
+  const div = document.createElement('div');
+  div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+  div.innerHTML = `
+    <button type="button"
+      onclick="this.parentElement.remove()"
+      class="absolute top-2 right-2 text-red-500">✕</button>
+
+    <label class="block text-sm font-medium mb-1">Foto Tambahan</label>
+
+<input type="file"
+  name="extra_images[${index}][]"
+  id="extraFile_${index}"
+  class="hidden"
+  multiple
+  accept="image/*">
+
+
+    <div
+      onclick="document.getElementById('extraFile_${index}').click()"
+      ondragover="event.preventDefault()"
+      ondrop="handleDrop(event, ${index})"
+      class="border-2 border-dashed border-gray-300 rounded-lg p-6
+             text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50">
+      Klik atau drag foto ke sini
+    </div>
+
+    <div id="preview_${index}" class="grid grid-cols-4 gap-2 mt-3"></div>
+
+    <label class="block text-sm font-medium mt-3">Judul Foto</label>
+    <input type="text"
+      name="extra_titles[${index}]"
+      class="w-full border rounded p-2 text-sm mb-2">
+
+    <label class="block text-sm font-medium">Subtitle Foto</label>
+    <textarea
+      name="extra_subtitles[${index}]"
+      id="extraEditor_${index}"
+      class="w-full border rounded p-2 text-sm"
+      rows="3"></textarea>
+  `;
+
+  wrapper.appendChild(div);
+
+  // CKEDITOR
+  ClassicEditor.create(
+    document.querySelector(`#extraEditor_${index}`),
+    editorConfig
+  ).then(editor => {
+    editor.model.document.on('change:data', () => {
+      document.querySelector(`#extraEditor_${index}`).value = editor.getData();
+    });
+  });
+
+  document
+    .getElementById(`extraFile_${index}`)
+    .addEventListener('change', e => {
+      renderPreview(e.target.files, index);
+    });
+}
+
+function handleDrop(e, index) {
+  e.preventDefault();
+  const input = document.getElementById(`extraFile_${index}`);
+  input.files = e.dataTransfer.files;
+  renderPreview(input.files, index);
+}
+
+function renderPreview(files, index) {
+  const preview = document.getElementById(`preview_${index}`);
+  preview.innerHTML = '';
+
+  [...files].forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'w-20 h-20 object-cover rounded border';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+
+<script>
+function renderExtraPreview(files, index) {
+    const preview = document.getElementById(`extraEditPreview_${index}`);
+    if (!preview) return;
+
+    preview.innerHTML = '';
+
+    [...files].forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'relative w-20 h-20';
+
+            div.innerHTML = `
+                <img src="${e.target.result}"
+                     class="w-20 h-20 object-cover rounded-lg border">
+            `;
+
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+
+<script>
+function handleExtraDropReplace(e, index) {
+  e.preventDefault();
+  const input = document.getElementById(`extraInput_${index}`);
+  if (!input) return;
+
+  input.files = e.dataTransfer.files;
+  renderExtraReplacePreview(input.files[0], index);
+}
+
+function renderExtraReplacePreview(file, index) {
+  const preview = document.getElementById(`extraEditPreview_${index}`);
+  preview.innerHTML = '';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    preview.innerHTML = `
+      <img src="${e.target.result}"
+           class="w-20 h-20 object-cover rounded-lg border">
+    `;
+  };
+  reader.readAsDataURL(file);
+}
+
+</script>
+<script>
+let extraEditIndex = 0;
+
+function addExtraImageEdit() {
+    const wrapper = document.getElementById('extraImagesWrapperEdit');
+    const index = 'new_' + extraEditIndex++;
+
+    const div = document.createElement('div');
+    div.className = 'extra-item border rounded-lg p-4 relative bg-gray-50';
+
+    div.innerHTML = `
+        <button type="button"
+            onclick="this.closest('.extra-item').remove()"
+            class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+            ✕
+        </button>
+
+        <div class="grid grid-cols-1 gap-4">
+            <div>
+                <label class="block text-xs font-medium mb-1">Foto Tambahan</label>
+
+                <input
+  type="file"
+  multiple
+  name="extra_images[${index}][]"
+  id="extraInput_${index}"
+>
+
+
+
+                <div
+                    onclick="document.getElementById('extraInput_${index}').click()"
+                    ondrop="handleExtraDropEdit(event, ${index})"
+                    ondragover="event.preventDefault()"
+                    class="border-2 border-dashed border-gray-300 rounded-xl p-6
+                           text-center text-sm cursor-pointer
+                           hover:border-blue-400 hover:bg-blue-50 transition w-full">
+                    Klik atau drag beberapa foto
+                </div>
+
+                <div id="extraEditPreview_${index}" class="grid grid-cols-3 gap-2 mt-3"></div>
+            </div>
+
+            <div>
+                <label class="block mb-1 font-medium">Judul</label>
+                <input type="text"
+                    name="extra_titles[${index}]"
+                    class="w-full border rounded p-2 text-sm mb-3">
+
+                <label class="block mb-1 font-medium">Subtitle</label>
+                <textarea
+                    name="extra_subtitles[${index}]"
+                    id="extraEditEditor_${index}"
+                    rows="4"
+                    class="w-full border rounded p-2 text-sm"></textarea>
+            </div>
+        </div>
+    `;
+
+    wrapper.appendChild(div);
+
+    // CKEditor
+    ClassicEditor.create(
+        document.querySelector(`#extraEditEditor_${index}`),
+        editorConfig
+    ).then(editor => {
+        editor.model.document.on('change:data', () => {
+            document.querySelector(`#extraEditEditor_${index}`).value = editor.getData();
+        });
+    });
+
+    document
+  .getElementById(`extraInput_${index}`)
+  .addEventListener('change', e => {
+      console.log(e.target.files);
+  });
+
+}
+</script>
+<script>
+function removeExistingExtraImage(imageId, index) {
+    const preview = document.getElementById(`extraEditPreview_${index}`);
+    if (!preview) return;
+
+    // hapus thumbnail saja
+    const thumb = preview.querySelector(`[data-existing-id="${imageId}"]`);
+    if (thumb) thumb.remove();
+
+    // kirim ID ke backend
+    const wrapper = preview.closest('.extra-item');
+    if (!wrapper.querySelector(`input[value="${imageId}"]`)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'delete_extra_ids[]';
+        input.value = imageId;
+        wrapper.appendChild(input);
+    }
+}
+</script>
+<script>
+function submitAddForm() {
+    const form = document.getElementById('addForm');
+    const formData = new FormData(form);
+
+    // inject subtitle utama
+    if (addSubtitleEditor) {
+        formData.set('subtitle', addSubtitleEditor.getData());
+    }
+
+    Swal.fire({
+        title: 'Menyimpan...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document
+                .querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(res => res.json())
+    .then(result => {
+        Swal.close();
+
+        if (result.success !== false) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                timer: 1200,
+                showConfirmButton: false
+            });
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            Swal.fire('Error', result.message || 'Gagal', 'error');
+        }
+    })
+    .catch(err => {
+        Swal.close();
+        Swal.fire('Error', 'Terjadi kesalahan', 'error');
+        console.error(err);
+    });
+}
+</script>
+<script>
+function handleExtraDropEdit(e, index) {
+    e.preventDefault();
+    const input = document.getElementById(`extraInput_${index}`);
+    if (!input) return;
+
+    input.files = e.dataTransfer.files;
+    renderExtraPreview(input.files, index);
+}
+</script>
+<script>
+function previewExtraReplace(input, index) {
+  if (!input.files[0]) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById(`extraPreview_${index}`).innerHTML = `
+      <img src="${e.target.result}"
+           class="w-20 h-20 object-cover rounded border">
+    `;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+</script>
+
 <style>
     .iphone-switch {
     position: relative;
