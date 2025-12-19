@@ -54,7 +54,7 @@
 
 {{-- ================= ADD MODAL ================= --}}
 <div id="addModal"
-    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  class="hidden fixed inset-0 bg-black/70 backdrop-blur-[1px] flex items-center justify-center z-50">
     <div class="bg-white rounded-lg w-full max-w-md p-6 space-y-4">
         <h2 class="text-lg font-semibold">Tambah Kategori Artikel</h2>
 
@@ -88,7 +88,8 @@
 
 {{-- ================= EDIT MODAL ================= --}}
 <div id="editModal"
-    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+   class="hidden fixed inset-0 bg-black/70 backdrop-blur-[1px] flex items-center justify-center z-50">
+
     <div class="bg-white rounded-lg w-full max-w-md p-6 space-y-4">
         <h2 class="text-lg font-semibold">Edit Kategori Artikel</h2>
 

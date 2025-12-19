@@ -40,12 +40,21 @@
                         @endif
                     </td>
                     <td class="px-4 py-3 space-x-1">
-                        <button
-                        type="button"
-                        onclick="openEditModal({{ $item->id }})"
-                        class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded">
-                        Edit
-                        </button>
+                       <button
+    type="button"
+    onclick='openEditModal({
+        id: {{ $item->id }},
+        title: @json($item->title),
+        category_id: {{ $item->category_id ?? "null" }},
+        display: {{ $item->display ? 1 : 0 }},
+        content: @json($item->content),
+        image: @json($item->image),
+    })'
+    class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded">
+    Edit
+</button>
+
+
 
                     
                         <form method="POST"
@@ -177,7 +186,8 @@
 
 {{-- ================= MODAL EDIT ================= --}}
 <div id="editModal"
-    class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    class="hidden fixed inset-0 bg-black/70 backdrop-blur-[2px] flex items-center justify-center z-50">
+
 
     <div
         class="bg-white rounded-xl w-full max-w-2xl p-6 space-y-4
@@ -193,7 +203,6 @@
 
             <!-- DISPLAY -->
             <div class="flex items-center gap-2 text-sm">
-                <input type="hidden" name="display" value="0">
                 <input type="checkbox" name="display" value="1" id="editDisplay">
                 <label for="editDisplay">Tampilkan artikel</label>
             </div>
@@ -244,15 +253,18 @@
             <div>
                 <label class="block mb-2 font-medium">Upload Gambar</label>
 
-                <input
-                    type="file"
-                    name="image"
-                    id="articleImageInput"
-                    accept="image/png,image/jpeg,image/gif"
-                    class="hidden">
+                <!-- EDIT -->
+<input
+    type="file"
+    name="image"
+    id="articleImageInputEdit"
+    accept="image/png,image/jpeg,image/gif"
+    class="hidden"
+    onchange="handleEditImage(this)">
+
 
                 <div
-                    onclick="document.getElementById('articleImageInput').click()"
+                    onclick="document.getElementById('articleImageInputEdit').click()"
                     class="border-2 border-dashed border-blue-400 rounded-xl
                            p-10 text-center cursor-pointer
                            bg-blue-50 hover:bg-blue-100 transition">
@@ -278,6 +290,7 @@
                     </div>
                 </div>
             </div>
+            <div id="editImagePreview" class="mt-3"></div>
 
             <!-- ACTION -->
             <div class="flex justify-end gap-2 pt-4">
@@ -322,25 +335,70 @@ function closeAddModal() {
 }
 
 function openEditModal(data) {
-    document.getElementById('editModal').classList.remove('hidden');
-    document.getElementById('editForm').addEventListener('submit', function () {
-    if (window.editorEdit) {
-        document.getElementById('editorEdit').value = editorEdit.getData();
+
+    /*
+    data HARUS object:
+    {
+        id,
+        title,
+        category_id,
+        display,
+        content,
+        image
     }
-});
+    */
 
-    form.action = form.action.replace(/\/\d+$/, '/' + id);
+    console.log('EDIT DATA:', data);
 
-    console.log('FINAL ACTION:', form.action);
-
+    // ================= MODAL =================
+    const modal = document.getElementById('editModal');
     modal.classList.remove('hidden');
 
-    document.getElementById('editTitle').value = data.title;
-    document.getElementById('editCategory').value = data.category_id;
+    // ================= FORM ACTION =================
+    const form = document.getElementById('editForm');
+    form.action = "{{ url('/artikel') }}/" + data.id;
+
+    // ================= TITLE =================
+    document.getElementById('editTitle').value = data.title ?? '';
+
+    // ================= CATEGORY =================
+    document.getElementById('editCategory').value = data.category_id ?? '';
+
+    // ================= DISPLAY =================
     document.getElementById('editDisplay').checked = data.display == 1;
 
+    // ================= CKEDITOR CONTENT =================
     if (window.editorEdit) {
-        editorEdit.setData(data.content || '');
+        editorEdit.setData(data.content ?? '');
+    } else {
+        console.warn('CKEditor belum siap');
+    }
+
+    // ================= IMAGE PREVIEW =================
+    const preview = document.getElementById('editImagePreview');
+    preview.innerHTML = '';
+
+    if (data.image) {
+        preview.innerHTML = `
+            <div class="relative inline-block">
+                <img
+                    src="/storage/${data.image}"
+                    class="max-h-64 rounded-lg shadow border object-contain bg-white">
+
+                <button
+                    type="button"
+                    onclick="removeEditImage()"
+                    class="absolute -top-2 -right-2
+                           bg-red-500 text-white
+                           w-7 h-7 rounded-full
+                           flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+                Klik upload untuk mengganti gambar
+            </p>
+        `;
     }
 }
 
@@ -408,5 +466,57 @@ function removeArticleImage() {
         });
     });
     </script>
+<script>
+function removeEditImage() {
+    document.getElementById('articleImageInputEdit').value = '';
+    document.getElementById('editImagePreview').innerHTML = '';
+}
+</script>
+
+<script>
+function handleEditImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // validasi basic
+    if (!file.type.startsWith('image/')) {
+        alert('File harus berupa gambar');
+        input.value = '';
+        return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran maksimal 2MB');
+        input.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        document.getElementById('editImagePreview').innerHTML = `
+            <div class="relative inline-block">
+                <img
+                    src="${e.target.result}"
+                    class="max-h-64 rounded-lg shadow border object-contain bg-white">
+
+                <button
+                    type="button"
+                    onclick="removeEditImage()"
+                    class="absolute -top-2 -right-2
+                           bg-red-500 text-white
+                           w-7 h-7 rounded-full
+                           flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+                Gambar baru akan menggantikan gambar lama
+            </p>
+        `;
+    };
+
+    reader.readAsDataURL(file);
+}
+</script>
 
 @endsection

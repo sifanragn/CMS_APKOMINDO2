@@ -60,7 +60,8 @@
     </form>
 
     <!-- Modal Tambah -->
-    <div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="addModal"
+    class="hidden fixed inset-0 bg-black/70 backdrop-blur-[2px] flex items-center justify-center z-50">
         <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
             <h2 class="text-lg font-semibold">Tambah Career</h2>
             <form action="{{ route('career.store') }}" method="POST" id="addCareerForm">

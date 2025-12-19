@@ -23,6 +23,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\TentangkamiController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\ApiArticleController;
+
 
 // Info user login (dengan Sanctum)
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -60,6 +62,8 @@ Route::get('/kegiatan', [ApiKegiatanController::class, 'index']);
 Route::get('/kegiatan/{id}', [ApiKegiatanController::class, 'show']);
 Route::get('/kegiatan/category/{id}', [ApiKegiatanController::class, 'byCategory']);
 
+Route::get('/articles', [ApiArticleController::class, 'index']);
+Route::get('/articles/{slug}', [ApiArticleController::class, 'show']);
 
 Route::get('/anggota', [ApiAnggotaController::class, 'index']);
 
@@ -71,6 +75,12 @@ Route::post('/applications', [ApiApplicationController::class, 'store']);
 //  Protected API Routes (auth:sanctum)
 // ==============================
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::prefix('articles')->name('api.articles.')->group(function () {
+        Route::post('/', [ApiArticleController::class, 'store'])->name('store');
+        Route::put('/{id}', [ApiArticleController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ApiArticleController::class, 'destroy'])->name('destroy');
+    });
 
     Route::prefix('hows')->name('api.hows.')->group(function () {
         Route::post('/', [HowsController::class, 'store'])->name('store');
