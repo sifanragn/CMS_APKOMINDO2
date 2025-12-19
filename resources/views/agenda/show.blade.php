@@ -160,22 +160,37 @@
                 <h2 class="text-xl font-bold mb-6">Galeri Kegiatan</h2>
 
                 <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    @foreach($agenda->extraImages as $img)
-                        <div class="bg-white rounded-xl shadow overflow-hidden">
-                            <div class="h-56 flex items-center justify-center bg-gray-50">
-                                <img src="{{ asset('storage/'.$img->image) }}"
-                                     class="max-h-full max-w-full object-contain"
-                                     alt="{{ $img->title }}">
-                            </div>
-                            @if($img->title || $img->subtitle)
-                                <div class="p-4">
-                                    <p class="font-semibold text-sm">{{ $img->title }}</p>
-                                    <p class="text-xs text-gray-500">{{ $img->subtitle }}</p>
-                                </div>
-                            @endif
+                @foreach($agenda->extraImages as $img)
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+
+                        {{-- IMAGE --}}
+                        <div class="bg-gray-50 flex items-center justify-center p-4 min-h-[220px]">
+                            <img src="{{ asset('storage/'.$img->image) }}"
+                                class="max-h-[200px] w-auto object-contain"
+                                alt="{{ $img->title }}">
                         </div>
-                    @endforeach
-                </div>
+
+                        {{-- TEXT --}}
+                        @if($img->title || $img->subtitle)
+                            <div class="p-4">
+                                @if($img->title)
+                                    <p class="text-sm font-semibold mb-1">
+                                        {{ $img->title }}
+                                    </p>
+                                @endif
+
+                                @if($img->subtitle)
+                                    <div class="text-xs text-gray-600 prose prose-sm max-w-none">
+                                        {!! $img->subtitle !!}
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
+                    </div>
+                @endforeach
+            </div>
+
             </div>
         @endif
 

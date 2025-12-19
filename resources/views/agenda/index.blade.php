@@ -367,11 +367,15 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
 
     <!-- CKEditor -->
     <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
 
     <script>
+
+    window.extraEditors = {};
+
         // Global variables for CKEditor instances
         let addDescriptionEditor = null;
         let editDescriptionEditor = null;
@@ -652,150 +656,158 @@
             document.getElementById('addModal').classList.add('hidden');
         }
 
-function openEditModal(id) {
-    const agendaData = window.agendas?.find(agenda => agenda.id == id);
+        function openEditModal(id) {
+            const agendaData = window.agendas?.find(agenda => agenda.id == id);
 
-    if (!agendaData) {
-        Swal.fire('Error', 'Data agenda tidak ditemukan', 'error');
-        return;
-    }
-
-    // Set form action
-    const form = document.getElementById('editForm');
-    form.action = `/agenda/${agendaData.id}`;
-
-    // Populate form fields
-    document.getElementById('editId').value = agendaData.id || '';
-    document.getElementById('editTitle').value = agendaData.title || '';
-    document.getElementById('editEventOrganizer').value = agendaData.event_organizer || '';
-    document.getElementById('editLocation').value = agendaData.location || '';
-    document.getElementById('editRegisterLink').value = agendaData.register_link || '';
-    document.getElementById('editYoutubeLink').value = agendaData.youtube_link || '';
-    document.getElementById('editType').value = agendaData.type || '';
-    document.getElementById('editStatus').value = agendaData.status || 'Open';
-
-    // Set editor content
-    if (editDescriptionEditor) {
-        const description = agendaData.description || '';
-        editDescriptionEditor.setData(description);
-    }
-
-    // Handle datetime
-    try {
-        if (agendaData.start_datetime) {
-            const startDate = new Date(agendaData.start_datetime);
-            if (!isNaN(startDate.getTime())) {
-                document.getElementById('editStartDatetime').value = formatDateTimeLocal(startDate);
+            if (!agendaData) {
+                Swal.fire('Error', 'Data agenda tidak ditemukan', 'error');
+                return;
             }
-        }
 
-        if (agendaData.end_datetime) {
-            const endDate = new Date(agendaData.end_datetime);
-            if (!isNaN(endDate.getTime())) {
-                document.getElementById('editEndDatetime').value = formatDateTimeLocal(endDate);
+            // Set form action
+            const form = document.getElementById('editForm');
+            form.action = `/agenda/${agendaData.id}`;
+
+            // Populate form fields
+            document.getElementById('editId').value = agendaData.id || '';
+            document.getElementById('editTitle').value = agendaData.title || '';
+            document.getElementById('editEventOrganizer').value = agendaData.event_organizer || '';
+            document.getElementById('editLocation').value = agendaData.location || '';
+            document.getElementById('editRegisterLink').value = agendaData.register_link || '';
+            document.getElementById('editYoutubeLink').value = agendaData.youtube_link || '';
+            document.getElementById('editType').value = agendaData.type || '';
+            document.getElementById('editStatus').value = agendaData.status || 'Open';
+
+            // Set editor content
+            if (editDescriptionEditor) {
+                const description = agendaData.description || '';
+                editDescriptionEditor.setData(description);
             }
-        }
-    } catch (error) {
-        console.error('Error parsing dates:', error);
-    }
 
-    // =======================
-    // FOTO UTAMA (DROPZONE)
-    // =======================
-    const editUploadArea = document.getElementById('editUploadArea');
+            // Handle datetime
+            try {
+                if (agendaData.start_datetime) {
+                    const startDate = new Date(agendaData.start_datetime);
+                    if (!isNaN(startDate.getTime())) {
+                        document.getElementById('editStartDatetime').value = formatDateTimeLocal(startDate);
+                    }
+                }
 
-    // reset isi dropzone
-    editUploadArea.innerHTML = `
-        <div class="flex flex-col items-center">
-            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-            </svg>
-            <p class="text-gray-600 mb-1">Klik atau drag foto ke sini</p>
-            <p class="text-sm text-gray-500">PNG, JPG (MAX 2MB)</p>
-        </div>
-    `;
+                if (agendaData.end_datetime) {
+                    const endDate = new Date(agendaData.end_datetime);
+                    if (!isNaN(endDate.getTime())) {
+                        document.getElementById('editEndDatetime').value = formatDateTimeLocal(endDate);
+                    }
+                }
+            } catch (error) {
+                console.error('Error parsing dates:', error);
+            }
 
-    // kalau ada foto lama, tampilkan preview di dalam dropzone
-    if (agendaData.image) {
-        editUploadArea.innerHTML = `
-            <div class="relative inline-block">
-                <img src="/storage/${agendaData.image}"
-                     class="h-40 object-contain rounded-lg mx-auto mb-2" />
+            // =======================
+            // FOTO UTAMA (DROPZONE)
+            // =======================
+            const editUploadArea = document.getElementById('editUploadArea');
 
-                <button type="button"
-                    onclick="removeCurrentImage('edit')"
-                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                    ✕
-                </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">Klik atau drop untuk ganti foto</p>
-        `;
-    }
-
-    // =======================
-    // EXTRA IMAGES (EDIT)
-    // =======================
-    const existingWrapper = document.getElementById('existingExtraImages');
-    existingWrapper.innerHTML = '';
-
-    if (agendaData.extra_images && agendaData.extra_images.length) {
-        agendaData.extra_images.forEach(img => {
-            const div = document.createElement('div');
-            div.className = 'border rounded-lg p-4 bg-gray-50 relative';
-
-            div.innerHTML = `
-                <button type="button"
-                    onclick="removeExtraEdit(this, ${img.id})"
-                    class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
-
-                <div onclick="this.querySelector('input').click()"
-                    class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer mb-3 hover:bg-blue-50">
-
-                    <input type="file"
-                        name="extra_images[${img.id}]"
-                        accept="image/*"
-                        class="hidden">
-
-                    <img src="/storage/${img.image}"
-                        class="mx-auto h-32 object-contain rounded mb-2">
-
-                    <p class="text-xs text-gray-500">Klik untuk ganti foto</p>
-                </div>
-
-                <div class="mb-2">
-                    <label class="text-xs font-medium text-gray-600">Judul Foto</label>
-                    <input type="text"
-                        name="extra_titles[${img.id}]"
-                        value="${img.title ?? ''}"
-                        class="w-full border rounded p-2 text-sm">
-                </div>
-
-                <div>
-                    <label class="text-xs font-medium text-gray-600">Subtitle Foto</label>
-                    <textarea
-                        name="extra_subtitles[${img.id}]"
-                        rows="2"
-                        class="w-full border rounded p-2 text-sm">${img.subtitle ?? ''}</textarea>
+            // reset isi dropzone
+            editUploadArea.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-gray-600 mb-1">Klik atau drag foto ke sini</p>
+                    <p class="text-sm text-gray-500">PNG, JPG (MAX 2MB)</p>
                 </div>
             `;
 
-            existingWrapper.appendChild(div);
-        });
-    }
+            // kalau ada foto lama, tampilkan preview di dalam dropzone
+            if (agendaData.image) {
+                editUploadArea.innerHTML = `
+                    <div class="relative inline-block">
+                        <img src="/storage/${agendaData.image}"
+                            class="h-40 object-contain rounded-lg mx-auto mb-2" />
 
-    // speakers
-    if (agendaData.speakers && Array.isArray(agendaData.speakers) && agendaData.speakers.length > 0) {
-        const speakerIds = agendaData.speakers.map(speaker => speaker.id.toString());
-        $('#editSpeakers').val(speakerIds);
-    } else {
-        $('#editSpeakers').val([]);
-    }
-    $('#editSpeakers').trigger('change');
+                        <button type="button"
+                            onclick="removeCurrentImage('edit')"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                            ✕
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Klik atau drop untuk ganti foto</p>
+                `;
+            }
 
-    // show modal
-    document.getElementById('editModal').classList.remove('hidden');
-}
+            // =======================
+            // EXTRA IMAGES (EDIT)
+            // =======================
+            const existingWrapper = document.getElementById('existingExtraImages');
+            existingWrapper.innerHTML = '';
+
+            if (agendaData.extra_images && agendaData.extra_images.length) {
+                agendaData.extra_images.forEach(img => {
+                    const div = document.createElement('div');
+                    div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+                    div.innerHTML = `
+                        <button type="button"
+                            onclick="removeExtraEdit(this, ${img.id})"
+                            class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
+
+                        <div onclick="this.querySelector('input').click()"
+                            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer mb-3 hover:bg-blue-50">
+
+                            <input type="file"
+                                name="extra_images[${img.id}]"
+                                accept="image/*"
+                                class="hidden">
+
+                            <img src="/storage/${img.image}"
+                                class="mx-auto h-32 object-contain rounded mb-2">
+
+                            <p class="text-xs text-gray-500">Klik untuk ganti foto</p>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="text-xs font-medium text-gray-600">Judul Foto</label>
+                            <input type="text"
+                                name="extra_titles[${img.id}]"
+                                value="${img.title ?? ''}"
+                                class="w-full border rounded p-2 text-sm">
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-gray-600">Subtitle Foto</label>
+                            <textarea
+                            name="extra_subtitles[${img.id}]"
+                            rows="2"
+                            class="extra-subtitle-editor w-full border rounded p-2 text-sm">${img.subtitle ?? ''}
+                            </textarea>
+
+                        </div>
+                    `;
+
+                    existingWrapper.appendChild(div);
+                });
+            }
+
+            // speakers
+            if (agendaData.speakers && Array.isArray(agendaData.speakers) && agendaData.speakers.length > 0) {
+                const speakerIds = agendaData.speakers.map(speaker => speaker.id.toString());
+                $('#editSpeakers').val(speakerIds);
+            } else {
+                $('#editSpeakers').val([]);
+            }
+            $('#editSpeakers').trigger('change');
+
+            // show modal
+            document.getElementById('editModal').classList.remove('hidden');
+
+            // 🔥 INIT CKEDITOR UNTUK SUBTITLE EXISTING
+            setTimeout(() => {
+                initExtraSubtitleEditors();
+            }, 100);
+
+            }
 
 
         function closeEditModal() {
@@ -803,25 +815,25 @@ function openEditModal(id) {
         }
 
         function removeCurrentImage(type) {
-    const uploadAreaId = type === 'add' ? 'addUploadArea' : 'editUploadArea';
-    const inputId = type === 'add' ? 'addImageInput' : 'editImageInput';
+            const uploadAreaId = type === 'add' ? 'addUploadArea' : 'editUploadArea';
+            const inputId = type === 'add' ? 'addImageInput' : 'editImageInput';
 
-    const uploadArea = document.getElementById(uploadAreaId);
-    const input = document.getElementById(inputId);
+            const uploadArea = document.getElementById(uploadAreaId);
+            const input = document.getElementById(inputId);
 
-    input.value = '';
+            input.value = '';
 
-    uploadArea.innerHTML = `
-        <div class="flex flex-col items-center">
-            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-            </svg>
-            <p class="text-gray-600 mb-1">Klik untuk upload atau drag and drop</p>
-            <p class="text-sm text-gray-500">PNG, JPG (MAX 2MB)</p>
-        </div>
-    `;
-}
+            uploadArea.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-gray-600 mb-1">Klik untuk upload atau drag and drop</p>
+                    <p class="text-sm text-gray-500">PNG, JPG (MAX 2MB)</p>
+                </div>
+            `;
+        }
 
 
         function bulkDelete() {
@@ -1135,15 +1147,19 @@ function addExtraImageAdd() {
             class="w-full border rounded p-2 text-sm mb-2">
 
         <textarea
-            name="extra_subtitles[${index}]"
-            placeholder="Subtitle foto"
-            class="w-full border rounded p-2 text-sm"
-            rows="2"></textarea>
+    name="extra_subtitles[${index}]"
+    rows="2"
+    class="extra-subtitle-editor w-full border rounded p-2 text-sm"
+    placeholder="Subtitle foto"></textarea>
+
+
+
     `;
 
     wrapper.appendChild(div);
 
     setupExtraDropzone(`extraDropAdd-${index}`);
+    initExtraSubtitleEditors();
 }
 
 </script>
@@ -1160,6 +1176,7 @@ function removeExtraEdit(button, id) {
 }
 </script>
 <script>
+
 let extraEditIndex = 0;
 
 function addExtraImageEdit() {
@@ -1174,7 +1191,6 @@ function addExtraImageEdit() {
             onclick="this.parentElement.remove()"
             class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
 
-        <!-- DROPZONE -->
         <div id="extraDropEdit-${index}"
             class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer mb-3 hover:bg-blue-50 transition">
 
@@ -1195,16 +1211,19 @@ function addExtraImageEdit() {
 
         <textarea
             name="extra_subtitles_new[${index}]"
-            placeholder="Subtitle foto"
-            class="w-full border rounded p-2 text-sm"
-            rows="2"></textarea>
+            class="extra-subtitle-editor w-full border rounded p-2 text-sm"
+            rows="2"
+            placeholder="Subtitle foto"></textarea>
     `;
 
     wrapper.appendChild(div);
 
-    // 🔥 INI YANG SELAMA INI HILANG
     setupExtraDropzone(`extraDropEdit-${index}`);
+
+    // 🔥 INIT CKEDITOR
+    initExtraSubtitleEditors();
 }
+
 
 </script>
 <script>
@@ -1226,6 +1245,44 @@ function addExtraImageEdit() {
 });
 
 </script>
+<script>
+function initExtraSubtitleEditors() {
+    document.querySelectorAll('.extra-subtitle-editor').forEach((el, index) => {
+
+        // kasih ID unik kalau belum ada
+        if (!el.id) {
+            el.id = 'extra_subtitle_' + index + '_' + Date.now();
+        }
+
+        // cegah double init
+        if (window.extraEditors[el.id]) return;
+
+        ClassicEditor.create(el, {
+            toolbar: [
+                'bold', 'italic', 'underline',
+                '|',
+                'bulletedList', 'numberedList',
+                '|',
+                'link',
+                '|',
+                'undo', 'redo'
+            ],
+            language: 'id'
+        }).then(editor => {
+            window.extraEditors[el.id] = editor;
+
+            // sync ke textarea saat submit
+            editor.model.document.on('change:data', () => {
+                el.value = editor.getData();
+            });
+        }).catch(err => {
+            console.error('CKEditor subtitle error:', err);
+        });
+
+    });
+}
+</script>
+
 
     <style>
 table thead th {
