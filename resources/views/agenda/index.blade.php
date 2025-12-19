@@ -1207,7 +1207,25 @@ function addExtraImageEdit() {
 }
 
 </script>
+<script>
+    document.addEventListener('change', function (e) {
+    // hanya untuk extra image edit
+    if (!e.target.matches('input[type="file"][name^="extra_images"]')) return;
 
+    const input = e.target;
+    const wrapper = input.closest('div');
+    const img = wrapper.querySelector('img');
+
+    if (!input.files || !input.files[0] || !img) return;
+
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+        img.src = ev.target.result; // 🔥 GANTI PREVIEW
+    };
+    reader.readAsDataURL(input.files[0]);
+});
+
+</script>
 
     <style>
 table thead th {

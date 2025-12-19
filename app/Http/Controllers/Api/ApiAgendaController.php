@@ -8,27 +8,48 @@ use Illuminate\Http\Request;
 
 class ApiAgendaController extends Controller
 {
-
+    /**
+     * List agenda
+     */
     public function index()
     {
         try {
-            $agendas = Agenda::with('speakers')
+            $agendas = Agenda::with(['speakers', 'extraImages'])
                 ->latest()
                 ->get()
                 ->map(function ($agenda) {
 
-                    // Tambahkan URL gambar agenda
+                    // ========================
+                    // FOTO UTAMA AGENDA
+                    // ========================
                     $agenda->image_url = $agenda->image
                         ? asset('storage/' . $agenda->image)
                         : null;
 
-                    // Tambahkan URL gambar setiap speaker
-                    $agenda->speakers->map(function ($speaker) {
+                    // ========================
+                    // PEMBICARA
+                    // ========================
+                    $agenda->speakers = $agenda->speakers->map(function ($speaker) {
                         $speaker->image_url = $speaker->image
                             ? asset('storage/' . $speaker->image)
                             : null;
                         return $speaker;
                     });
+
+                    // ========================
+                    // GALERI FOTO TAMBAHAN
+                    // ========================
+                    $agenda->extra_images = $agenda->extraImages->map(function ($img) {
+                        return [
+                            'id'        => $img->id,
+                            'title'     => $img->title,
+                            'subtitle'  => $img->subtitle,
+                            'image_url' => asset('storage/' . $img->image),
+                        ];
+                    });
+
+                    // Hapus relasi mentah biar clean
+                    unset($agenda->extraImages);
 
                     return $agenda;
                 });
@@ -36,22 +57,25 @@ class ApiAgendaController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'List agenda',
-                'data' => $agendas
+                'data'    => $agendas
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data agenda',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * Detail agenda
+     */
     public function show($id)
     {
         try {
-            $agenda = Agenda::with('speakers')->find($id);
+            $agenda = Agenda::with(['speakers', 'extraImages'])->find($id);
 
             if (!$agenda) {
                 return response()->json([
@@ -60,30 +84,48 @@ class ApiAgendaController extends Controller
                 ], 404);
             }
 
-            // Tambahkan URL gambar agenda
+            // ========================
+            // FOTO UTAMA
+            // ========================
             $agenda->image_url = $agenda->image
                 ? asset('storage/' . $agenda->image)
                 : null;
 
-            // Tambahkan URL gambar speaker
-            $agenda->speakers->map(function ($speaker) {
+            // ========================
+            // PEMBICARA
+            // ========================
+            $agenda->speakers = $agenda->speakers->map(function ($speaker) {
                 $speaker->image_url = $speaker->image
                     ? asset('storage/' . $speaker->image)
                     : null;
                 return $speaker;
             });
 
+            // ========================
+            // GALERI FOTO TAMBAHAN
+            // ========================
+            $agenda->extra_images = $agenda->extraImages->map(function ($img) {
+                return [
+                    'id'        => $img->id,
+                    'title'     => $img->title,
+                    'subtitle'  => $img->subtitle,
+                    'image_url' => asset('storage/' . $img->image),
+                ];
+            });
+
+            unset($agenda->extraImages);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Detail agenda',
-                'data' => $agenda
+                'data'    => $agenda
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data agenda',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
