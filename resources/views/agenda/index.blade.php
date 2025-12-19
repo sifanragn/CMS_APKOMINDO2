@@ -27,6 +27,8 @@
         <table class="min-w-full bg-white border border-gray-200 text-sm rounded-xl overflow-hidden">
             <thead>
                 <tr class="bg-gray-50 border-b">
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
+                    <input type="checkbox" id="checkAll"></th>
                     <th class="px-4 py-3 text-left font-semibold text-gray-700">No</th>
                     <th class="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
                     <th class="px-4 py-3 text-left font-semibold text-gray-700">Gambar</th>
@@ -41,6 +43,12 @@
             <tbody id="agendaTable">
                 @foreach ($agendas as $index => $item)
                     <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="px-4 py-3">
+                        <input type="checkbox"
+                            class="rowCheckbox"
+                            value="{{ $item->id }}"
+                            onchange="updateBulkDeleteButton()">
+                        </td>
 
                         <td class="px-4 py-3">
                             {{ $index + 1 }}
@@ -1206,6 +1214,15 @@ function initExtraSubtitleEditors() {
 
     });
 }
+</script>
+<script>
+document.getElementById('checkAll')?.addEventListener('change', function () {
+    const checked = this.checked;
+    document.querySelectorAll('.rowCheckbox').forEach(cb => {
+        cb.checked = checked;
+    });
+    updateBulkDeleteButton();
+});
 </script>
 
 

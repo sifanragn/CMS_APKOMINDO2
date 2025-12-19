@@ -210,19 +210,18 @@
         // Function to highlight active menu
         function highlightActiveMenu() {
             const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('nav a');
+            const navLinks = document.querySelectorAll('aside nav a');
 
             navLinks.forEach(link => {
                 const href = link.getAttribute('href');
                 if (href === currentPath) {
-                    link.classList.add('bg-blue-50', 'text-blue-900', 'font-semibold');
-                    link.classList.remove('text-gray-700');
+                    link.classList.add('active');
                 } else {
-                    link.classList.remove('bg-blue-50', 'text-blue-900', 'font-semibold');
-                    link.classList.add('text-gray-700');
+                    link.classList.remove('active');
                 }
             });
         }
+
 
         // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
@@ -403,7 +402,7 @@
         <!-- Main Content Area - dengan margin left untuk sidebar -->
         <div class="flex-1 flex flex-col min-w-0 ml-64">
             <!-- Header - Fixed/Sticky -->
-            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+            <header class="app-header sticky top-0 z-40">
                 <div class="flex items-center justify-between px-6 py-4">
                     <!-- User Menu -->
                     <div class="flex items-center ml-auto">
@@ -488,7 +487,7 @@
             </header>
 
             <!-- Main Content -->
-            <main class="flex-1 p-6 bg-gray-50 overflow-y-auto">
+            <main class="flex-1 p-6 app-content overflow-y-auto">
                 @yield('content')
             </main>
         </div>
@@ -528,6 +527,130 @@
 }
 </script>
 @stack('scripts')
+<style>
+/* ============================= */
+/* SOFT BLUE SIDEBAR THEME       */
+/* ============================= */
+
+:root {
+  --blue-main: #2563eb;        /* blue-600 */
+  --blue-soft: #eef4ff;        /* ⬅ lebih biru dikit */
+  --blue-hover: #dbeafe;       /* blue-100 */
+  --blue-border: #c7ddff;      /* ⬅ border lebih kebaca */
+  --blue-text: #1e3a8a;        /* blue-900 */
+  --blue-muted: #475569;       /* slate-600 */
+  --bg-content: #f3f7ff;       /* ⬅ content super soft */
+}
+
+
+/* ============================= */
+/* HEADER – MATCH SIDEBAR STYLE */
+/* ============================= */
+
+.app-header {
+  background: linear-gradient(
+    to bottom,
+    #f9fbff,
+    #ffffff
+  );
+  border-bottom: 1px solid var(--blue-border);
+  box-shadow: 0 1px 2px rgba(30, 58, 138, 0.04); /* soft shadow */
+}
+
+/* User hover di header */
+.app-header button:hover {
+  background-color: var(--blue-hover);
+}
+
+
+/* Sidebar base */
+aside {
+  background: linear-gradient(
+    to bottom,
+    #f8fbff,
+    #ffffff
+  );
+  border-right: 1px solid var(--blue-border);
+}
+
+/* Logo area */
+aside .border-b {
+  background: linear-gradient(
+    to bottom,
+    #f1f7ff,
+    #ffffff
+  );
+}
+
+/* Section title */
+aside h3 {
+  color: #475569;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Menu item base */
+aside nav a,
+aside nav button {
+  color: var(--blue-muted);
+  border-radius: 0.75rem;
+  position: relative;
+}
+
+/* Hover */
+aside nav a:hover,
+aside nav button:hover {
+  background-color: var(--blue-hover);
+  color: var(--blue-text);
+}
+
+/* Icon */
+aside svg {
+  color: #3b82f6; /* blue-500 soft */
+}
+
+/* Active menu */
+aside nav a.active {
+  background-color: var(--blue-soft);
+  color: var(--blue-text);
+  font-weight: 600;
+}
+
+/* Active indicator bar */
+aside nav a.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12%;
+  height: 76%;
+  width: 4px;
+  background: linear-gradient(
+    to bottom,
+    #60a5fa,
+    #2563eb
+  );
+  border-radius: 0 6px 6px 0;
+}
+
+/* Dropdown items */
+aside nav div[id$="dropdown"] a {
+  font-size: 0.7rem;
+  padding-left: 1.25rem;
+}
+
+/* Dropdown hover */
+aside nav div[id$="dropdown"] a:hover {
+  background-color: #f1f7ff;
+  color: var(--blue-text);
+}
+
+/* Smooth feel */
+aside nav a,
+aside nav button {
+  transition: all 0.18s ease;
+}
+
+</style>
 
 </body>
 </html>

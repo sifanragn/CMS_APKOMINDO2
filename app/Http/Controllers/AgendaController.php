@@ -250,38 +250,28 @@ class AgendaController extends Controller
     }
 
     public function bulkDelete(Request $request)
-    {
-        $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'integer',
-        ]);
+{
+    $ids = $request->ids;
 
-        $ids = $request->input('ids');
-
-        try {
-            $agendas = Agenda::whereIn('id', $ids)->get();
-
-            foreach ($agendas as $agenda) {
-
-                foreach ($agenda->extraImages as $img) {
-                    if ($img->image && Storage::disk('public')->exists($img->image)) {
-                        Storage::disk('public')->delete($img->image);
-                    }
-                    $img->delete();
-                }
-
-                if ($agenda->image && Storage::disk('public')->exists($agenda->image)) {
-                    Storage::disk('public')->delete($agenda->image);
-                }
-
-                $agenda->speakers()->detach();
-                $agenda->delete();
-            }
-
-
-            return back()->with('success', 'Agenda terpilih berhasil dihapus.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus Agenda: ' . $e->getMessage());
-        }
+    if (!$ids || count($ids) === 0) {
+        return back()->with('error', 'Tidak ada agenda yang dipilih');
     }
+
+    // 🔥 hapus relasi dulu (kalau ada)
+    \App\Models\Agenda::whereIn('id', $ids)->each(function ($agenda) {
+        // hapus image
+        if ($agenda->image && \Storage::disk('public')->exists($agenda->image)) {
+            \Storage::disk('public')->delete($agenda->image);
+        }
+
+        // detach speaker
+        $agenda->speakers()->detach();
+
+        // hapus agenda
+        $agenda->delete();
+    });
+
+    return back()->with('success', count($ids).' agenda berhasil dihapus');
+}
+
 }
