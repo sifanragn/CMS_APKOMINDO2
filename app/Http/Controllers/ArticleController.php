@@ -28,7 +28,7 @@ class ArticleController extends Controller
         ]);
 
         $data['slug']    = Str::slug($data['title']);
-        $data['display'] = $request->has('display');
+        $data['display'] = $request->has('display') ? 1 : 0;
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('articles', 'public');
@@ -36,11 +36,14 @@ class ArticleController extends Controller
 
         Article::create($data);
 
-        return back()->with('success', 'Artikel berhasil ditambahkan');
+        return redirect()->route('artikel.index')
+    ->with('success', 'Artikel berhasil diperbarui');
+
     }
 
     public function update(Request $request, Article $article)
 {
+    // dd($request->all());
     $data = $request->validate([
         'title'       => 'required|string|max:255',
         'category_id' => 'nullable|exists:article_categories,id',
@@ -49,10 +52,13 @@ class ArticleController extends Controller
     ]);
 
     $data['slug']    = Str::slug($data['title']);
-    $data['display'] = $request->has('display');
+    $data['display'] = $request->has('display') ? 1 : 0;
 
     if ($request->hasFile('image')) {
         if ($article->image) {
+            if ($article->image) {
+                Storage::disk('public')->delete($article->image);
+            }
             Storage::disk('public')->delete($article->image);
         }
         $data['image'] = $request->file('image')->store('articles', 'public');
@@ -60,7 +66,9 @@ class ArticleController extends Controller
 
     $article->update($data);
 
-    return back()->with('success', 'Artikel berhasil diperbarui');
+    return redirect()->route('artikel.index')
+    ->with('success', 'Artikel berhasil diperbarui');
+
 }
 
     public function destroy(Article $article)
