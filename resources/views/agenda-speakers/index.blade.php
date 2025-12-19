@@ -53,8 +53,19 @@
                     <td class="px-4 py-2 border">{{ $item->name }}</td>
                     <td class="px-4 py-2 border">{{ $item->title ?? '-' }}</td>
                     <td class="px-4 py-2 border space-x-1">
-                        <button onclick="openEditModal({{ $item->id }})"
-                            class="text-blue-600 hover:text-blue-800 px-2 py-1 text-xs border border-blue-300 rounded hover:bg-blue-50">Edit</button>
+                        <button
+    onclick='openEditModal({
+        id: {{ $item->id }},
+        title: @json($item->title),
+        content: @json($item->content),
+        category_id: {{ $item->category_id ?? 'null' }},
+        display: {{ $item->display ? 1 : 0 }},
+        image: @json($item->image)
+    })'
+    class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded">
+    Edit
+</button>
+
                     </td>
                 </tr>
                 @endforeach

@@ -23,12 +23,14 @@ use App\Http\Controllers\KegiatanController;
 use App\Http\Controllers\ProfileSettingController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\SosmedController;
+use App\Http\Controllers\ArticleController;
 use App\Models\CategoryKegiatan;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\TentangkamiController;
 use App\Models\CategoryStore;
 use App\Models\TentangkamiCategory;
+use App\Http\Controllers\ArticleCategoryController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -158,6 +160,30 @@ Route::prefix('agenda-speakers')->name('agenda-speakers.')->group(function () {
     Route::delete('/{id}', [AgendaSpeakerController::class, 'destroy'])->name('destroy');
     Route::post('/bulk-delete', [AgendaSpeakerController::class, 'bulkDelete'])->name('bulkDelete');
 });
+
+
+Route::prefix('category-artikel')
+    ->name('category-artikel.')
+    ->group(function () {
+
+        Route::get('/', [ArticleCategoryController::class, 'index'])->name('index');
+        Route::post('/', [ArticleCategoryController::class, 'store'])->name('store');
+        Route::put('/{category}', [ArticleCategoryController::class, 'update'])->name('update');
+        Route::delete('/{category}', [ArticleCategoryController::class, 'destroy'])->name('destroy');
+});
+
+
+
+Route::prefix('artikel')->name('artikel.')->group(function () {
+        Route::get('/', [ArticleController::class, 'index'])->name('index');
+        Route::get('/create', [ArticleController::class, 'create'])->name('create');
+        Route::post('/', [ArticleController::class, 'store'])->name('store');
+
+        Route::get('/{artikel}', [ArticleController::class, 'show'])->name('show');
+        Route::get('/{artikel}/edit', [ArticleController::class, 'edit'])->name('edit');
+        Route::put('/{artikel}', [ArticleController::class, 'update'])->name('update');
+        Route::delete('/{artikel}', [ArticleController::class, 'destroy'])->name('destroy');
+    });
 
 Route::prefix('career')->name('career.')->group(function () {
     Route::get('/', [CareerController::class, 'index'])->name('index');

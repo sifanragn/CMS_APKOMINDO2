@@ -98,10 +98,19 @@
                                 Detail
                             </a>
 
-                            <button onclick="openEditModal({{ $item->id }})"
-                                class="px-3 py-1 text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100">
+                            <button
+                                onclick='openEditModal({
+                                    id: {{ $item->id }},
+                                    title: @json($item->title),
+                                    content: @json($item->content),
+                                    category_id: {{ $item->category_id ?? "null" }},
+                                    display: {{ $item->display ? 1 : 0 }},
+                                    image: @json($item->image)
+                                })'
+                                class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded">
                                 Edit
                             </button>
+
                         </td>
                     </tr>
                 @endforeach
@@ -656,159 +665,6 @@
             document.getElementById('addModal').classList.add('hidden');
         }
 
-        function openEditModal(id) {
-            const agendaData = window.agendas?.find(agenda => agenda.id == id);
-
-            if (!agendaData) {
-                Swal.fire('Error', 'Data agenda tidak ditemukan', 'error');
-                return;
-            }
-
-            // Set form action
-            const form = document.getElementById('editForm');
-            form.action = `/agenda/${agendaData.id}`;
-
-            // Populate form fields
-            document.getElementById('editId').value = agendaData.id || '';
-            document.getElementById('editTitle').value = agendaData.title || '';
-            document.getElementById('editEventOrganizer').value = agendaData.event_organizer || '';
-            document.getElementById('editLocation').value = agendaData.location || '';
-            document.getElementById('editRegisterLink').value = agendaData.register_link || '';
-            document.getElementById('editYoutubeLink').value = agendaData.youtube_link || '';
-            document.getElementById('editType').value = agendaData.type || '';
-            document.getElementById('editStatus').value = agendaData.status || 'Open';
-
-            // Set editor content
-            if (editDescriptionEditor) {
-                const description = agendaData.description || '';
-                editDescriptionEditor.setData(description);
-            }
-
-            // Handle datetime
-            try {
-                if (agendaData.start_datetime) {
-                    const startDate = new Date(agendaData.start_datetime);
-                    if (!isNaN(startDate.getTime())) {
-                        document.getElementById('editStartDatetime').value = formatDateTimeLocal(startDate);
-                    }
-                }
-
-                if (agendaData.end_datetime) {
-                    const endDate = new Date(agendaData.end_datetime);
-                    if (!isNaN(endDate.getTime())) {
-                        document.getElementById('editEndDatetime').value = formatDateTimeLocal(endDate);
-                    }
-                }
-            } catch (error) {
-                console.error('Error parsing dates:', error);
-            }
-
-            // =======================
-            // FOTO UTAMA (DROPZONE)
-            // =======================
-            const editUploadArea = document.getElementById('editUploadArea');
-
-            // reset isi dropzone
-            editUploadArea.innerHTML = `
-                <div class="flex flex-col items-center">
-                    <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
-                    <p class="text-gray-600 mb-1">Klik atau drag foto ke sini</p>
-                    <p class="text-sm text-gray-500">PNG, JPG (MAX 2MB)</p>
-                </div>
-            `;
-
-            // kalau ada foto lama, tampilkan preview di dalam dropzone
-            if (agendaData.image) {
-                editUploadArea.innerHTML = `
-                    <div class="relative inline-block">
-                        <img src="/storage/${agendaData.image}"
-                            class="h-40 object-contain rounded-lg mx-auto mb-2" />
-
-                        <button type="button"
-                            onclick="removeCurrentImage('edit')"
-                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                            ✕
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2">Klik atau drop untuk ganti foto</p>
-                `;
-            }
-
-            // =======================
-            // EXTRA IMAGES (EDIT)
-            // =======================
-            const existingWrapper = document.getElementById('existingExtraImages');
-            existingWrapper.innerHTML = '';
-
-            if (agendaData.extra_images && agendaData.extra_images.length) {
-                agendaData.extra_images.forEach(img => {
-                    const div = document.createElement('div');
-                    div.className = 'border rounded-lg p-4 bg-gray-50 relative';
-
-                    div.innerHTML = `
-                        <button type="button"
-                            onclick="removeExtraEdit(this, ${img.id})"
-                            class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
-
-                        <div onclick="this.querySelector('input').click()"
-                            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer mb-3 hover:bg-blue-50">
-
-                            <input type="file"
-                                name="extra_images[${img.id}]"
-                                accept="image/*"
-                                class="hidden">
-
-                            <img src="/storage/${img.image}"
-                                class="mx-auto h-32 object-contain rounded mb-2">
-
-                            <p class="text-xs text-gray-500">Klik untuk ganti foto</p>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="text-xs font-medium text-gray-600">Judul Foto</label>
-                            <input type="text"
-                                name="extra_titles[${img.id}]"
-                                value="${img.title ?? ''}"
-                                class="w-full border rounded p-2 text-sm">
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-600">Subtitle Foto</label>
-                            <textarea
-                            name="extra_subtitles[${img.id}]"
-                            rows="2"
-                            class="extra-subtitle-editor w-full border rounded p-2 text-sm">${img.subtitle ?? ''}
-                            </textarea>
-
-                        </div>
-                    `;
-
-                    existingWrapper.appendChild(div);
-                });
-            }
-
-            // speakers
-            if (agendaData.speakers && Array.isArray(agendaData.speakers) && agendaData.speakers.length > 0) {
-                const speakerIds = agendaData.speakers.map(speaker => speaker.id.toString());
-                $('#editSpeakers').val(speakerIds);
-            } else {
-                $('#editSpeakers').val([]);
-            }
-            $('#editSpeakers').trigger('change');
-
-            // show modal
-            document.getElementById('editModal').classList.remove('hidden');
-
-            // 🔥 INIT CKEDITOR UNTUK SUBTITLE EXISTING
-            setTimeout(() => {
-                initExtraSubtitleEditors();
-            }, 100);
-
-            }
-
 
         function closeEditModal() {
             document.getElementById('editModal').classList.add('hidden');
@@ -1114,6 +970,75 @@
         });
 
     </script>
+<script>
+function openEditModal(data) {
+    // ===== DEBUG (boleh dihapus kalau sudah yakin) =====
+    console.log('OPEN EDIT MODAL DATA:', data);
+
+    // ===== CEK MODAL =====
+    const modal = document.getElementById('editModal');
+    if (!modal) {
+        console.error('editModal tidak ditemukan');
+        return;
+    }
+
+    // ===== BUKA MODAL =====
+    modal.classList.remove('hidden');
+
+    // ===== FORM ACTION =====
+    const form = document.getElementById('editForm');
+    if (form) {
+        form.action = `/artikel/${data.id}`;
+    }
+
+    // ===== FIELD: TITLE =====
+    const titleInput = document.getElementById('editTitle');
+    if (titleInput) {
+        titleInput.value = data.title ?? '';
+    }
+
+    // ===== FIELD: CATEGORY =====
+    const categorySelect = document.getElementById('editCategory');
+    if (categorySelect) {
+        categorySelect.value = data.category_id ?? '';
+    }
+
+    // ===== FIELD: DISPLAY =====
+    const displayCheckbox = document.getElementById('editDisplay');
+    if (displayCheckbox) {
+        displayCheckbox.checked = data.display == 1;
+    }
+
+    // ===== CKEDITOR =====
+    if (typeof editorEdit !== 'undefined' && editorEdit) {
+        editorEdit.setData(data.content ?? '');
+    } else {
+        console.warn('editorEdit belum siap');
+    }
+
+    // ===== PREVIEW IMAGE LAMA =====
+    const dropzoneContent = document.getElementById('articleDropzoneContent');
+    if (dropzoneContent) {
+        if (data.image) {
+            dropzoneContent.innerHTML = `
+                <div class="relative inline-block">
+                    <img src="/storage/${data.image}"
+                         class="max-h-64 rounded-lg shadow border object-contain bg-white">
+
+                    <button type="button"
+                        onclick="removeArticleImage()"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white
+                               w-7 h-7 rounded-full flex items-center justify-center">
+                        ✕
+                    </button>
+                </div>
+            `;
+        } else {
+            resetArticleDropzone();
+        }
+    }
+}
+</script>
 
     <script>
 let extraAddIndex = 0;
