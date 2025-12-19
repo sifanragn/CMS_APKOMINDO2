@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\AgendaImage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,4 +29,10 @@ class Agenda extends Model
     {
         return $this->belongsToMany(AgendaSpeaker::class, 'agenda_agenda_speaker', 'agenda_id', 'agenda_speaker_id');
     }
+
+    public function extraImages()
+    {
+        return $this->hasMany(AgendaImage::class);
+    }
+
 }

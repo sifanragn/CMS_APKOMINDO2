@@ -212,6 +212,20 @@
                     <small class="text-gray-500">Pilih satu atau lebih pembicara</small>
                 </div>
 
+                {{-- FOTO TAMBAHAN --}}
+                <div class="mt-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="font-medium">Foto Tambahan</label>
+                        <button type="button"
+                            onclick="addExtraImageAdd()"
+                            class="text-sm bg-blue-500 text-white px-3 py-1 rounded">
+                            + Tambah Foto
+                        </button>
+                    </div>
+
+                    <div id="extraImagesWrapperAdd" class="space-y-3"></div>
+                </div>
+
                 <div class="flex justify-end space-x-2 mt-6">
                     <button type="button" onclick="closeAddModal()"
                         class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
@@ -315,6 +329,26 @@
                     </select>
                     <small class="text-gray-500">Pilih satu atau lebih pembicara</small>
                 </div>
+                {{-- FOTO TAMBAHAN (EDIT) --}}
+<div class="mt-6">
+    <div class="flex justify-between items-center mb-2">
+        <label class="font-medium">Foto Tambahan</label>
+        <button type="button"
+            onclick="addExtraImageEdit()"
+            class="text-sm bg-blue-500 text-white px-3 py-1 rounded">
+            + Tambah Foto
+        </button>
+    </div>
+
+    {{-- FOTO LAMA (DALAM BENTUK FORM) --}}
+    <div id="existingExtraImages" class="space-y-4"></div>
+
+    {{-- FOTO BARU --}}
+    <div id="extraImagesWrapperEdit" class="space-y-4"></div>
+</div>
+
+
+                <div id="deletedExtraWrapper"></div>
 
                 <div class="flex justify-end space-x-2 mt-6">
                     <button type="button" onclick="closeEditModal()"
@@ -348,6 +382,43 @@
             setupDragAndDrop();
             initializeCKEditor();
         });
+
+        function setupExtraDropzone(id) {
+    const zone = document.getElementById(id);
+    const input = zone.querySelector('input');
+    const img = zone.querySelector('img');
+
+    zone.addEventListener('click', () => input.click());
+
+    input.addEventListener('change', () => {
+        if (!input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            img.src = e.target.result;
+            img.classList.remove('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    });
+
+    ['dragenter', 'dragover'].forEach(evt =>
+        zone.addEventListener(evt, e => {
+            e.preventDefault();
+            zone.classList.add('bg-blue-50');
+        })
+    );
+
+    ['dragleave', 'drop'].forEach(evt =>
+        zone.addEventListener(evt, e => {
+            e.preventDefault();
+            zone.classList.remove('bg-blue-50');
+        })
+    );
+
+    zone.addEventListener('drop', e => {
+        input.files = e.dataTransfer.files;
+        input.dispatchEvent(new Event('change'));
+    });
+}
 
         function initializeCKEditor() {
             // Enhanced configuration for CKEditor with more features including numbering
@@ -477,6 +548,20 @@
             setupDragAndDropForElement('editUploadArea', 'editImageInput');
         }
 
+        function bindClickUpload(areaId, inputId, previewId) {
+            const area = document.getElementById(areaId);
+            const input = document.getElementById(inputId);
+
+            area.addEventListener('click', () => {
+                input.click();
+            });
+
+            input.addEventListener('change', () => {
+                previewImage(input, previewId);
+            });
+        }
+
+
         function setupDragAndDropForElement(uploadAreaId, inputId) {
             const uploadArea = document.getElementById(uploadAreaId);
             const fileInput = document.getElementById(inputId);
@@ -567,103 +652,177 @@
             document.getElementById('addModal').classList.add('hidden');
         }
 
-        function openEditModal(id) {
-            const agendaData = window.agendas?.find(agenda => agenda.id == id);
+function openEditModal(id) {
+    const agendaData = window.agendas?.find(agenda => agenda.id == id);
 
-            if (!agendaData) {
-                Swal.fire('Error', 'Data agenda tidak ditemukan', 'error');
-                return;
+    if (!agendaData) {
+        Swal.fire('Error', 'Data agenda tidak ditemukan', 'error');
+        return;
+    }
+
+    // Set form action
+    const form = document.getElementById('editForm');
+    form.action = `/agenda/${agendaData.id}`;
+
+    // Populate form fields
+    document.getElementById('editId').value = agendaData.id || '';
+    document.getElementById('editTitle').value = agendaData.title || '';
+    document.getElementById('editEventOrganizer').value = agendaData.event_organizer || '';
+    document.getElementById('editLocation').value = agendaData.location || '';
+    document.getElementById('editRegisterLink').value = agendaData.register_link || '';
+    document.getElementById('editYoutubeLink').value = agendaData.youtube_link || '';
+    document.getElementById('editType').value = agendaData.type || '';
+    document.getElementById('editStatus').value = agendaData.status || 'Open';
+
+    // Set editor content
+    if (editDescriptionEditor) {
+        const description = agendaData.description || '';
+        editDescriptionEditor.setData(description);
+    }
+
+    // Handle datetime
+    try {
+        if (agendaData.start_datetime) {
+            const startDate = new Date(agendaData.start_datetime);
+            if (!isNaN(startDate.getTime())) {
+                document.getElementById('editStartDatetime').value = formatDateTimeLocal(startDate);
             }
-
-            // Set form action
-            const form = document.getElementById('editForm');
-            form.action = `/agenda/${agendaData.id}`;
-
-            // Populate form fields with handling null values
-            document.getElementById('editId').value = agendaData.id || '';
-            document.getElementById('editTitle').value = agendaData.title || '';
-            document.getElementById('editEventOrganizer').value = agendaData.event_organizer || '';
-            document.getElementById('editLocation').value = agendaData.location || '';
-            document.getElementById('editRegisterLink').value = agendaData.register_link || '';
-            document.getElementById('editYoutubeLink').value = agendaData.youtube_link || '';
-            document.getElementById('editType').value = agendaData.type || '';
-            document.getElementById('editStatus').value = agendaData.status || 'Open';
-
-            // Set editor content with proper HTML handling
-            if (editDescriptionEditor) {
-                // Ensure HTML content is properly loaded
-                const description = agendaData.description || '';
-                editDescriptionEditor.setData(description);
-            }
-
-            // Handle datetime fields with error handling
-            try {
-                if (agendaData.start_datetime) {
-                    const startDate = new Date(agendaData.start_datetime);
-                    if (!isNaN(startDate.getTime())) {
-                        document.getElementById('editStartDatetime').value = formatDateTimeLocal(startDate);
-                    }
-                }
-
-                if (agendaData.end_datetime) {
-                    const endDate = new Date(agendaData.end_datetime);
-                    if (!isNaN(endDate.getTime())) {
-                        document.getElementById('editEndDatetime').value = formatDateTimeLocal(endDate);
-                    }
-                }
-            } catch (error) {
-                console.error('Error parsing dates:', error);
-            }
-
-            // Handle image preview
-            const editPreview = document.getElementById('editPreview');
-            const editUploadArea = document.getElementById('editUploadArea');
-
-            if (agendaData.image) {
-                editPreview.innerHTML = `
-                    <div class="relative inline-block">
-                        <img src="/storage/${agendaData.image}" class="h-32 w-32 rounded-lg shadow-md object-cover border" alt="Current image">
-                        <button type="button" onclick="removeCurrentImage('edit')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                editUploadArea.style.display = 'none';
-            } else {
-                editPreview.innerHTML = '';
-                editUploadArea.style.display = 'block';
-            }
-
-            // Handle speakers selection
-            if (agendaData.speakers && Array.isArray(agendaData.speakers) && agendaData.speakers.length > 0) {
-                const speakerIds = agendaData.speakers.map(speaker => speaker.id.toString());
-                $('#editSpeakers').val(speakerIds);
-            } else {
-                $('#editSpeakers').val([]);
-            }
-
-            // Trigger change to update select2
-            $('#editSpeakers').trigger('change');
-
-            // Show modal
-            document.getElementById('editModal').classList.remove('hidden');
         }
+
+        if (agendaData.end_datetime) {
+            const endDate = new Date(agendaData.end_datetime);
+            if (!isNaN(endDate.getTime())) {
+                document.getElementById('editEndDatetime').value = formatDateTimeLocal(endDate);
+            }
+        }
+    } catch (error) {
+        console.error('Error parsing dates:', error);
+    }
+
+    // =======================
+    // FOTO UTAMA (DROPZONE)
+    // =======================
+    const editUploadArea = document.getElementById('editUploadArea');
+
+    // reset isi dropzone
+    editUploadArea.innerHTML = `
+        <div class="flex flex-col items-center">
+            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p class="text-gray-600 mb-1">Klik atau drag foto ke sini</p>
+            <p class="text-sm text-gray-500">PNG, JPG (MAX 2MB)</p>
+        </div>
+    `;
+
+    // kalau ada foto lama, tampilkan preview di dalam dropzone
+    if (agendaData.image) {
+        editUploadArea.innerHTML = `
+            <div class="relative inline-block">
+                <img src="/storage/${agendaData.image}"
+                     class="h-40 object-contain rounded-lg mx-auto mb-2" />
+
+                <button type="button"
+                    onclick="removeCurrentImage('edit')"
+                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Klik atau drop untuk ganti foto</p>
+        `;
+    }
+
+    // =======================
+    // EXTRA IMAGES (EDIT)
+    // =======================
+    const existingWrapper = document.getElementById('existingExtraImages');
+    existingWrapper.innerHTML = '';
+
+    if (agendaData.extra_images && agendaData.extra_images.length) {
+        agendaData.extra_images.forEach(img => {
+            const div = document.createElement('div');
+            div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+            div.innerHTML = `
+                <button type="button"
+                    onclick="removeExtraEdit(this, ${img.id})"
+                    class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
+
+                <div onclick="this.querySelector('input').click()"
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer mb-3 hover:bg-blue-50">
+
+                    <input type="file"
+                        name="extra_images[${img.id}]"
+                        accept="image/*"
+                        class="hidden">
+
+                    <img src="/storage/${img.image}"
+                        class="mx-auto h-32 object-contain rounded mb-2">
+
+                    <p class="text-xs text-gray-500">Klik untuk ganti foto</p>
+                </div>
+
+                <div class="mb-2">
+                    <label class="text-xs font-medium text-gray-600">Judul Foto</label>
+                    <input type="text"
+                        name="extra_titles[${img.id}]"
+                        value="${img.title ?? ''}"
+                        class="w-full border rounded p-2 text-sm">
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-gray-600">Subtitle Foto</label>
+                    <textarea
+                        name="extra_subtitles[${img.id}]"
+                        rows="2"
+                        class="w-full border rounded p-2 text-sm">${img.subtitle ?? ''}</textarea>
+                </div>
+            `;
+
+            existingWrapper.appendChild(div);
+        });
+    }
+
+    // speakers
+    if (agendaData.speakers && Array.isArray(agendaData.speakers) && agendaData.speakers.length > 0) {
+        const speakerIds = agendaData.speakers.map(speaker => speaker.id.toString());
+        $('#editSpeakers').val(speakerIds);
+    } else {
+        $('#editSpeakers').val([]);
+    }
+    $('#editSpeakers').trigger('change');
+
+    // show modal
+    document.getElementById('editModal').classList.remove('hidden');
+}
+
 
         function closeEditModal() {
             document.getElementById('editModal').classList.add('hidden');
         }
 
-        function removeCurrentImage(modalType) {
-            const previewId = modalType === 'edit' ? 'editPreview' : 'addPreview';
-            const uploadAreaId = modalType === 'edit' ? 'editUploadArea' : 'addUploadArea';
-            const inputId = modalType === 'edit' ? 'editImageInput' : 'addImageInput';
+        function removeCurrentImage(type) {
+    const uploadAreaId = type === 'add' ? 'addUploadArea' : 'editUploadArea';
+    const inputId = type === 'add' ? 'addImageInput' : 'editImageInput';
 
-            document.getElementById(previewId).innerHTML = '';
-            document.getElementById(uploadAreaId).style.display = 'block';
-            document.getElementById(inputId).value = '';
-        }
+    const uploadArea = document.getElementById(uploadAreaId);
+    const input = document.getElementById(inputId);
+
+    input.value = '';
+
+    uploadArea.innerHTML = `
+        <div class="flex flex-col items-center">
+            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p class="text-gray-600 mb-1">Klik untuk upload atau drag and drop</p>
+            <p class="text-sm text-gray-500">PNG, JPG (MAX 2MB)</p>
+        </div>
+    `;
+}
+
 
         function bulkDelete() {
             const checkedBoxes = document.querySelectorAll('.rowCheckbox:checked');
@@ -707,55 +866,51 @@
         }
 
         // Select all functionality
-        document.getElementById('selectAll').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.rowCheckbox');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-            updateBulkDeleteButton();
-        });
 
         function previewImage(input, previewId) {
-            const preview = document.getElementById(previewId);
-            const uploadAreaId = previewId === 'addPreview' ? 'addUploadArea' : 'editUploadArea';
-            const uploadArea = document.getElementById(uploadAreaId);
+    const preview = document.getElementById(previewId);
+    const uploadAreaId = previewId === 'addPreview' ? 'addUploadArea' : 'editUploadArea';
+    const uploadArea = document.getElementById(uploadAreaId);
 
-            preview.innerHTML = '';
+    if (!input.files || !input.files[0]) return;
 
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
+    const file = input.files[0];
 
-                // Validate file type
-                if (!file.type.match('image.*')) {
-                    Swal.fire('Error', 'File harus berupa gambar (PNG/JPG)', 'error');
-                    input.value = '';
-                    return;
-                }
+    // Validasi tipe
+    if (!file.type.startsWith('image/')) {
+        Swal.fire('Error', 'File harus berupa gambar', 'error');
+        input.value = '';
+        return;
+    }
 
-                // Validate file size (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    Swal.fire('Error', 'Ukuran file maksimal 2MB', 'error');
-                    input.value = '';
-                    return;
-                }
+    // Validasi size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        Swal.fire('Error', 'Ukuran file maksimal 2MB', 'error');
+        input.value = '';
+        return;
+    }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `
-                        <div class="relative inline-block">
-                            <img src="${e.target.result}" class="h-32 w-32 rounded-lg shadow-md object-cover border" alt="Preview">
-                            <button type="button" onclick="removeCurrentImage('${previewId === 'addPreview' ? 'add' : 'edit'}')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-                    uploadArea.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                uploadArea.style.display = 'block';
-            }
-        }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+
+        // === PREVIEW DI DALAM DROPZONE ===
+        uploadArea.innerHTML = `
+            <div class="relative inline-block">
+                <img src="${e.target.result}"
+                     class="h-40 object-contain rounded-lg mx-auto mb-2" />
+
+                <button type="button"
+                    onclick="removeCurrentImage('${previewId === 'addPreview' ? 'add' : 'edit'}')"
+                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Klik atau drop untuk ganti foto</p>
+        `;
+    };
+
+    reader.readAsDataURL(file);
+}
 
         // Helper function to format datetime for datetime-local input
         function formatDateTimeLocal(date) {
@@ -946,22 +1101,113 @@
             }
         });
 
-        // Initialize auto-save when editors are ready
-        function initializeAutoSave() {
-            if (addDescriptionEditor) {
-                setTimeout(() => loadDraft(addDescriptionEditor, 'agenda_add_draft'), 1000);
-                startAutoSave(addDescriptionEditor, 'agenda_add_draft');
-            }
-
-            if (editDescriptionEditor) {
-                setTimeout(() => loadDraft(editDescriptionEditor, 'agenda_edit_draft'), 1000);
-                startAutoSave(editDescriptionEditor, 'agenda_edit_draft');
-            }
-        }
-
-        // Call auto-save initialization
-        setTimeout(initializeAutoSave, 2000);
     </script>
+
+    <script>
+let extraAddIndex = 0;
+
+function addExtraImageAdd() {
+    const wrapper = document.getElementById('extraImagesWrapperAdd');
+    const index = extraAddIndex++;
+
+    const div = document.createElement('div');
+    div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+    div.innerHTML = `
+        <button type="button"
+            onclick="this.parentElement.remove()"
+            class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
+
+        <div id="extraDropAdd-${index}"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer mb-3 hover:bg-blue-50">
+            <input type="file"
+                name="extra_images[${index}]"
+                accept="image/*"
+                class="hidden">
+
+            <p class="text-sm text-gray-500">Klik atau drag foto ke sini</p>
+            <img class="hidden mx-auto h-32 mt-2 rounded object-contain">
+        </div>
+
+        <input type="text"
+            name="extra_titles[${index}]"
+            placeholder="Judul foto"
+            class="w-full border rounded p-2 text-sm mb-2">
+
+        <textarea
+            name="extra_subtitles[${index}]"
+            placeholder="Subtitle foto"
+            class="w-full border rounded p-2 text-sm"
+            rows="2"></textarea>
+    `;
+
+    wrapper.appendChild(div);
+
+    setupExtraDropzone(`extraDropAdd-${index}`);
+}
+
+</script>
+<script>
+function removeExtraEdit(button, id) {
+    button.parentElement.remove();
+
+    const wrapper = document.getElementById('deletedExtraWrapper');
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'delete_extra_ids[]';
+    input.value = id;
+    wrapper.appendChild(input);
+}
+</script>
+<script>
+let extraEditIndex = 0;
+
+function addExtraImageEdit() {
+    const wrapper = document.getElementById('extraImagesWrapperEdit');
+    const index = extraEditIndex++;
+
+    const div = document.createElement('div');
+    div.className = 'border rounded-lg p-4 bg-gray-50 relative';
+
+    div.innerHTML = `
+        <button type="button"
+            onclick="this.parentElement.remove()"
+            class="absolute top-2 right-2 text-red-500 font-bold">✕</button>
+
+        <!-- DROPZONE -->
+        <div id="extraDropEdit-${index}"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer mb-3 hover:bg-blue-50 transition">
+
+            <input type="file"
+                name="extra_images_new[${index}]"
+                accept="image/*"
+                class="hidden">
+
+            <img class="hidden mx-auto h-32 object-contain rounded mb-2">
+
+            <p class="text-xs text-gray-500">Klik atau drag foto ke sini</p>
+        </div>
+
+        <input type="text"
+            name="extra_titles_new[${index}]"
+            placeholder="Judul foto"
+            class="w-full border rounded p-2 text-sm mb-2">
+
+        <textarea
+            name="extra_subtitles_new[${index}]"
+            placeholder="Subtitle foto"
+            class="w-full border rounded p-2 text-sm"
+            rows="2"></textarea>
+    `;
+
+    wrapper.appendChild(div);
+
+    // 🔥 INI YANG SELAMA INI HILANG
+    setupExtraDropzone(`extraDropEdit-${index}`);
+}
+
+</script>
+
 
     <style>
 table thead th {
