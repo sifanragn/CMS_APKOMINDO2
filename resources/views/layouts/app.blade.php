@@ -653,6 +653,210 @@ aside nav button {
   transition: all 0.18s ease;
 }
 
+
+/* ================================================= */
+/* GLOBAL SMOOTH TRANSITION (AMAN & RINGAN)          */
+/* ================================================= */
+a,
+button,
+input,
+select,
+textarea {
+  transition:
+    background-color .2s ease,
+    color .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .15s ease;
+}
+
+/* ================================================= */
+/* PAGE TRANSITION                                  */
+/* ================================================= */
+.app-content {
+  animation: pageFade .35s ease;
+}
+
+@keyframes pageFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================================= */
+/* DROPDOWN ANIMATION (SIDEBAR)                      */
+/* ================================================= */
+.dropdown-enter {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  overflow: hidden;
+}
+
+.dropdown-enter-active {
+  max-height: 500px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all .25s ease;
+}
+
+/* ================================================= */
+/* BUTTON MICRO INTERACTION                          */
+/* ================================================= */
+button:active,
+a:active {
+  transform: scale(.97);
+}
+
+/* ================================================= */
+/* CARD / BOX HOVER EFFECT                           */
+/* ================================================= */
+.card-hover {
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(15,23,42,.08);
+}
+
+/* ================================================= */
+/* SCROLL SMOOTH                                    */
+/* ================================================= */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ================================================= */
+/* RESPONSIVE SIDEBAR (MOBILE)                       */
+/* ================================================= */
+@media (max-width: 1024px) {
+  aside {
+    position: fixed;
+    transform: translateX(-100%);
+    transition: transform .3s ease;
+    z-index: 60;
+  }
+
+  aside.open {
+    transform: translateX(0);
+  }
+
+  .ml-64 {
+    margin-left: 0;
+  }
+}
+
+/* ===================================== */
+/* SOFT DATA TABLE (CMS STYLE)           */
+/* ===================================== */
+
+/* wrapper */
+.soft-table {
+  border-collapse: separate;
+  border-spacing: 0 10px; /* jarak antar row */
+}
+
+/* header */
+.soft-table thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b; /* slate-500 */
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding-bottom: 12px;
+}
+
+/* row card */
+.soft-table tbody tr {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+  transition: all .25s ease;
+}
+
+/* hover row */
+.soft-table tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+/* cell */
+.soft-table td {
+  padding: 14px 16px;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+}
+
+/* first & last cell radius */
+.soft-table tbody tr td:first-child {
+  border-radius: 14px 0 0 14px;
+}
+.soft-table tbody tr td:last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+/* divider halus antar kolom (opsional) */
+.soft-table td + td {
+  border-left: 1px dashed #e5e7eb;
+}
+
+/* image */
+.table-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,.08);
+}
+
+/* status badge */
+.badge-status {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.badge-open {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* action button */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  transition: all .2s ease;
+}
+
+.btn-action:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.btn-edit {
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+.btn-detail {
+  border-color: #e5e7eb;
+  color: #475569;
+}
+
+
 </style>
 
 </body>

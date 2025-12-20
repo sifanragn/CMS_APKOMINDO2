@@ -18,6 +18,14 @@ class ArticleController extends Controller
         ]);
     }
 
+    public function show(Article $artikel)
+{
+    return view('artikel.show', [
+        'article' => $artikel // bebas mau dinamain apa di view
+    ]);
+}
+
+
     public function store(Request $request)
     {
         $data = $request->validate([

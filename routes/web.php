@@ -175,15 +175,16 @@ Route::prefix('category-artikel')
 
 
 Route::prefix('artikel')->name('artikel.')->group(function () {
-        Route::get('/', [ArticleController::class, 'index'])->name('index');
-        Route::get('/create', [ArticleController::class, 'create'])->name('create');
-        Route::post('/', [ArticleController::class, 'store'])->name('store');
+    Route::get('/', [ArticleController::class, 'index'])->name('index');
+    Route::get('/create', [ArticleController::class, 'create'])->name('create');
+    Route::post('/', [ArticleController::class, 'store'])->name('store');
 
-        Route::get('/{artikel}', [ArticleController::class, 'show'])->name('show');
-        Route::get('/{artikel}/edit', [ArticleController::class, 'edit'])->name('edit');
-        Route::put('/{artikel}', [ArticleController::class, 'update'])->name('update');
-        Route::delete('/{artikel}', [ArticleController::class, 'destroy'])->name('destroy');
-    });
+    Route::get('/{artikel}', [ArticleController::class, 'show'])->name('show');
+    Route::get('/{artikel}/edit', [ArticleController::class, 'edit'])->name('edit');
+    Route::put('/{artikel}', [ArticleController::class, 'update'])->name('update');
+    Route::delete('/{artikel}', [ArticleController::class, 'destroy'])->name('destroy');
+});
+
 
 Route::prefix('career')->name('career.')->group(function () {
     Route::get('/', [CareerController::class, 'index'])->name('index');

@@ -22,25 +22,42 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($articles as $i => $item)
-                <tr class="border-t hover:bg-gray-50">
-                    <td class="px-4 py-3">{{ $i+1 }}</td>
-                    <td class="px-4 py-3 font-medium">{{ $item->title }}</td>
-                    <td class="px-4 py-3">
-                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
-                            {{ $item->category->name ?? '-' }}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3">
-                        @if($item->image)
-                            <img src="{{ asset('storage/'.$item->image) }}"
-                                 class="w-14 h-14 rounded-lg object-cover border">
-                        @else
-                            <span class="text-xs text-gray-400">Tidak ada</span>
-                        @endif
-                    </td>
-                    <td class="px-4 py-3 space-x-1">
-                       <button
+            @forelse($articles as $i => $item)
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-3">{{ $i+1 }}</td>
+
+                <td class="px-4 py-3 font-medium">
+                    {{ $item->title }}
+                </td>
+
+                <td class="px-4 py-3">
+                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
+                        {{ $item->category->name ?? '-' }}
+                    </span>
+                </td>
+
+                <td class="px-4 py-3">
+                    @if($item->image)
+                        <img src="{{ asset('storage/'.$item->image) }}"
+                            class="w-14 h-14 rounded-lg object-cover border">
+                    @else
+                        <span class="text-xs text-gray-400">Tidak ada</span>
+                    @endif
+                </td>
+
+                {{-- AKSI --}}
+                <td class="px-4 py-3 space-x-1">
+
+                    {{-- DETAIL --}}
+                    <a href="{{ route('artikel.show', $item->id) }}"
+                    class="px-3 py-1 text-xs
+                            bg-gray-100 text-gray-700
+                            rounded hover:bg-gray-200">
+                        Detail
+                    </a>
+
+                    {{-- EDIT --}}
+                    <button
                         type="button"
                         onclick='openEditModal({
                             id: {{ $item->id }},
@@ -50,29 +67,35 @@
                             content: @json($item->content),
                             image: @json($item->image),
                         })'
-                        class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded">
+                        class="px-3 py-1 text-xs
+                            bg-blue-50 text-blue-600
+                            rounded hover:bg-blue-100">
                         Edit
                     </button>
 
-                        <form method="POST"
-                              action="{{ route('artikel.destroy',$item) }}"
-                              class="inline">
-                            @csrf @method('DELETE')
-                            <button onclick="return confirm('Hapus artikel?')"
-                                class="px-3 py-1 text-xs bg-red-50 text-red-600 rounded">
-                                Hapus
-                            </button>
-                        </form>
-                    </td>
-                    
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="py-10 text-center text-gray-500">
-                        Belum ada artikel
-                    </td>
-                </tr>
-                @endforelse
+                    {{-- HAPUS --}}
+                    <form method="POST"
+                        action="{{ route('artikel.destroy',$item) }}"
+                        class="inline">
+                        @csrf @method('DELETE')
+                        <button
+                            onclick="return confirm('Hapus artikel?')"
+                            class="px-3 py-1 text-xs
+                                bg-red-50 text-red-600
+                                rounded hover:bg-red-100">
+                            Hapus
+                        </button>
+                    </form>
+
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="5" class="py-10 text-center text-gray-500">
+                    Belum ada artikel
+                </td>
+            </tr>
+            @endforelse
             </tbody>
         </table>
     </div>

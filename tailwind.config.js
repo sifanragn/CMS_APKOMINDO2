@@ -7,6 +7,7 @@ module.exports = {
   ],
   theme: {
     extend: {
+      
       // Pastikan warna-warna ini ada atau tidak di-override
       colors: {
         purple: {
@@ -28,5 +29,8 @@ module.exports = {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+],
+
 }
