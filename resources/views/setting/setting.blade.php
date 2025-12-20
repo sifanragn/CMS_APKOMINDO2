@@ -13,7 +13,7 @@
                 {{-- Logo --}}
                 <div class="bg-white shadow-lg rounded-lg p-4 text-center">
                     <img src="{{ asset('storage/logo.png') }}" class="w-24 mx-auto mb-2">
-                    <h3 class="font-semibold text-xl">MGBK</h3>
+                    <h3 class="font-semibold text-xl">APKOMINDO</h3>
                 </div>
 
                 {{-- Contact --}}

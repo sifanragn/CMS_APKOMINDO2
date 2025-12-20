@@ -3,6 +3,41 @@
 @section('title', 'Beranda')
 
 @section('content')
+{{-- GREETING WRAPPER --}}
+<div id="greetingWrapper"
+     class="max-w-6xl mx-auto
+            overflow-hidden
+            transition-[max-height] duration-700 ease-[cubic-bezier(.22,.61,.36,1)]
+            max-h-0">
+
+    {{-- GREETING BAR --}}
+    <div id="greetingBar"
+         class="mb-4
+                opacity-0 -translate-y-4
+                transition-all duration-500 ease-out">
+
+        <div class="backdrop-blur-md bg-white/70
+                    border border-blue-100
+                    rounded-xl
+                    px-5 py-4
+                    flex items-center justify-between
+                    shadow-sm">
+
+            <div class="text-center w-full">
+                <p class="text-sm text-gray-600">
+                    <span id="greetingText"></span>,
+                    <span class="font-semibold text-blue-700">Apkomindo</span> 👋
+                </p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                    Semoga aktivitas hari ini berjalan lancar
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
     <div class="relative w-full max-w-6xl mx-auto">
         {{-- Slider Wrapper --}}
         <div id="slider" class="relative overflow-hidden rounded-xl shadow-lg">
@@ -149,6 +184,54 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     showSlide(0);
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const greetingText    = document.getElementById("greetingText");
+    const greetingBar     = document.getElementById("greetingBar");
+    const greetingWrapper = document.getElementById("greetingWrapper");
+
+    const hour = new Date().getHours();
+    let greeting = "Selamat Datang";
+
+    if (hour >= 4 && hour < 11) {
+        greeting = "Selamat Pagi";
+    } else if (hour >= 11 && hour < 15) {
+        greeting = "Selamat Siang";
+    } else if (hour >= 15 && hour < 18) {
+        greeting = "Selamat Sore";
+    } else {
+        greeting = "Selamat Malam";
+    }
+
+    greetingText.textContent = greeting;
+
+    /* === MUNCUL === */
+    setTimeout(() => {
+        greetingWrapper.classList.remove("max-h-0");
+        greetingWrapper.classList.add("max-h-40");
+
+        greetingBar.classList.remove("opacity-0", "-translate-y-4");
+        greetingBar.classList.add("opacity-100", "translate-y-0");
+    }, 200);
+
+    /* === HILANG SETELAH 5 DETIK === */
+    setTimeout(() => {
+
+        // fade + slide
+        greetingBar.classList.remove("opacity-100", "translate-y-0");
+        greetingBar.classList.add("opacity-0", "-translate-y-4");
+
+        // collapse space
+        setTimeout(() => {
+            greetingWrapper.classList.remove("max-h-40");
+            greetingWrapper.classList.add("max-h-0");
+        }, 300);
+
+    }, 5200);
 
 });
 </script>
