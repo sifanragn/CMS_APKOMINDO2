@@ -66,14 +66,15 @@ class ArticleController extends Controller
 }
 
 
-    public function destroy(Article $article)
-    {
-        if ($article->image) {
-            Storage::disk('public')->delete($article->image);
-        }
-
-        $article->delete();
-
-        return back()->with('success', 'Artikel berhasil dihapus');
+    public function destroy(Article $artikel)
+{
+    if ($artikel->image) {
+        Storage::disk('public')->delete($artikel->image);
     }
+
+    $artikel->delete();
+
+    return back()->with('success', 'Artikel berhasil dihapus');
+}
+
 }

@@ -492,6 +492,9 @@
             </main>
         </div>
     </div>
+    @stack('modals')
+
+    @stack('scripts')
     <script>
 /* ============================= */
 /* APKOMINDO BRAND SYSTEM       */
@@ -526,7 +529,7 @@
   );
 }
 </script>
-@stack('scripts')
+
 <style>
 /* ============================= */
 /* SOFT BLUE SIDEBAR THEME       */

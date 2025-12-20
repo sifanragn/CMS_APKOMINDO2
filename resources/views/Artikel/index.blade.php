@@ -41,22 +41,19 @@
                     </td>
                     <td class="px-4 py-3 space-x-1">
                        <button
-    type="button"
-    onclick='openEditModal({
-        id: {{ $item->id }},
-        title: @json($item->title),
-        category_id: {{ $item->category_id ?? "null" }},
-        display: {{ $item->display ? 1 : 0 }},
-        content: @json($item->content),
-        image: @json($item->image),
-    })'
-    class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded">
-    Edit
-</button>
+                        type="button"
+                        onclick='openEditModal({
+                            id: {{ $item->id }},
+                            title: @json($item->title),
+                            category_id: {{ $item->category_id ?? "null" }},
+                            display: {{ $item->display ? 1 : 0 }},
+                            content: @json($item->content),
+                            image: @json($item->image),
+                        })'
+                        class="px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded">
+                        Edit
+                    </button>
 
-
-
-                    
                         <form method="POST"
                               action="{{ route('artikel.destroy',$item) }}"
                               class="inline">
@@ -82,50 +79,50 @@
 </div>
 
 {{-- ================= MODAL ADD ================= --}}
-<div id="addModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
-        <h2 class="text-lg font-semibold">Tambah Artikel</h2>
+     <div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
+            <h2 class="text-lg font-semibold">Tambah Artikel</h2>
 
-        <form action="{{ route('artikel.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+                <form action="{{ route('artikel.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
 
-            <label class="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="display" value="0" checked>
-                Tampilkan artikel
-            </label>
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="display" value="0" checked>
+                        Tampilkan artikel
+                    </label>
 
-            <div>
-                <label class="text-sm font-medium">Judul</label>
-                <input type="text" name="title" required
-                       class="w-full border rounded p-2 text-sm">
-            </div>
+                    <div>
+                        <label class="text-sm font-medium">Judul</label>
+                        <input type="text" name="title" required
+                            class="w-full border rounded p-2 text-sm">
+                    </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-    Kategori <span class="text-red-500">*</span>
-</label>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+            Kategori <span class="text-red-500">*</span>
+        </label>
 
-<select
-    name="category_id"
-    required
-    class="w-full bg-white text-gray-800
-           border border-gray-300 rounded-lg px-3 py-2 text-sm
-           focus:outline-none focus:ring-2 focus:ring-blue-500
-           focus:border-blue-500
-           appearance-none">
+        <select
+            name="category_id"
+            required
+            class="w-full bg-white text-gray-800
+                border border-gray-300 rounded-lg px-3 py-2 text-sm
+                focus:outline-none focus:ring-2 focus:ring-blue-500
+                focus:border-blue-500
+                appearance-none">
 
-    <option value="" class="text-gray-400 bg-white">
-        Pilih kategori
-    </option>
+            <option value="" class="text-gray-400 bg-white">
+                Pilih kategori
+            </option>
 
-    @foreach($categories as $cat)
-        <option
-            value="{{ $cat->id }}"
-            class="bg-white text-gray-800">
-            {{ $cat->name }}
-        </option>
-    @endforeach
-</select>
+            @foreach($categories as $cat)
+                <option
+                    value="{{ $cat->id }}"
+                    class="bg-white text-gray-800">
+                    {{ $cat->name }}
+                </option>
+            @endforeach
+        </select>
 
             </div>
 
@@ -137,35 +134,35 @@
 
             <label class="block mb-2 font-medium">Upload Gambar</label>
 
-<input
-    type="file"
-    name="image"
-    id="articleImageInput"
-    accept="image/png,image/jpeg,image/gif"
-    class="hidden"
-    onchange="handleArticleImage(this)"
->
+        <input
+            type="file"
+            name="image"
+            id="articleImageInput"
+            accept="image/png,image/jpeg,image/gif"
+            class="hidden"
+            onchange="handleArticleImage(this)"
+        >
 
-<div
-    id="articleDropzone"
-    onclick="document.getElementById('articleImageInput').click()"
-    class="border-2 border-dashed border-blue-400 rounded-xl p-10 text-center cursor-pointer
-           bg-blue-50 hover:bg-blue-100 transition">
+        <div
+            id="articleDropzone"
+            onclick="document.getElementById('articleImageInput').click()"
+            class="border-2 border-dashed border-blue-400 rounded-xl p-10 text-center cursor-pointer
+                bg-blue-50 hover:bg-blue-100 transition">
 
-    <div id="articleDropzoneContent" class="flex flex-col items-center gap-2">
-        <svg class="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-        </svg>
+            <div id="articleDropzoneContent" class="flex flex-col items-center gap-2">
+                <svg class="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
 
-        <p class="text-gray-700 font-medium">
-            Klik untuk upload atau drag and drop
-        </p>
-        <p class="text-sm text-gray-500">
-            PNG, JPG, atau GIF (MAX. 2MB)
-        </p>
-    </div>
-</div>
+                <p class="text-gray-700 font-medium">
+                    Klik untuk upload atau drag and drop
+                </p>
+                <p class="text-sm text-gray-500">
+                    PNG, JPG, atau GIF (MAX. 2MB)
+                </p>
+            </div>
+        </div>
 
         <div id="addPreview" class="mt-4"></div>
 
@@ -185,13 +182,8 @@
 </div>
 
 {{-- ================= MODAL EDIT ================= --}}
-<div id="editModal"
-    class="hidden fixed inset-0 bg-black/70 backdrop-blur-[2px] flex items-center justify-center z-50">
-
-
-    <div
-        class="bg-white rounded-xl w-full max-w-2xl p-6 space-y-4
-               overflow-y-auto max-h-screen">
+ <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
 
         <h2 class="text-lg font-semibold">Edit Artikel</h2>
 

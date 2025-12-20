@@ -23,23 +23,23 @@
         </div>
 
         {{-- Table --}}
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-200 text-sm rounded-xl overflow-hidden">
-            <thead>
-                <tr class="bg-gray-50 border-b">
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                        <input type="checkbox" id="checkAll">
-                    </th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">No</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Gambar</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Tanggal</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Lokasi</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Pembicara</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Aksi</th>
-                </tr>
-            </thead>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-200 text-sm rounded-xl overflow-hidden">
+                <thead>
+                    <tr class="bg-gray-50 border-b">
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">
+                            <input type="checkbox" id="checkAll">
+                        </th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">No</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Judul</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Gambar</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Tanggal</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Lokasi</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Pembicara</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Aksi</th>
+                    </tr>
+                </thead>
 
             <tbody id="agendaTable">
                 @foreach ($agendas as $index => $item)
@@ -138,7 +138,7 @@
     <!-- Modal Tambah -->
     <div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
-            <h2 class="text-lg font-semibold">Tambah Agenda</h2>
+            <h2 class="text-lg font-semibold">Tambah Event</h2>
             <form action="{{ route('agenda.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="grid grid-cols-2 gap-4">
@@ -248,7 +248,7 @@
     <!-- Modal Edit -->
     <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4 overflow-y-auto max-h-screen">
-            <h2 class="text-lg font-semibold">Edit Agenda</h2>
+            <h2 class="text-lg font-semibold">Edit Event</h2>
             <form id="editForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
@@ -339,23 +339,22 @@
                     <small class="text-gray-500">Pilih satu atau lebih pembicara</small>
                 </div>
                 {{-- FOTO TAMBAHAN (EDIT) --}}
-<div class="mt-6">
-    <div class="flex justify-between items-center mb-2">
-        <label class="font-medium">Foto Tambahan</label>
-        <button type="button"
-            onclick="addExtraImageEdit()"
-            class="text-sm bg-blue-500 text-white px-3 py-1 rounded">
-            + Tambah Foto
-        </button>
-    </div>
+                <div class="mt-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="font-medium">Foto Tambahan</label>
+                        <button type="button"
+                            onclick="addExtraImageEdit()"
+                            class="text-sm bg-blue-500 text-white px-3 py-1 rounded">
+                            + Tambah Foto
+                        </button>
+                    </div>
 
-    {{-- FOTO LAMA (DALAM BENTUK FORM) --}}
-    <div id="existingExtraImages" class="space-y-4"></div>
+                    {{-- FOTO LAMA (DALAM BENTUK FORM) --}}
+                    <div id="existingExtraImages" class="space-y-4"></div>
 
-    {{-- FOTO BARU --}}
-    <div id="extraImagesWrapperEdit" class="space-y-4"></div>
-</div>
-
+                    {{-- FOTO BARU --}}
+                    <div id="extraImagesWrapperEdit" class="space-y-4"></div>
+                </div>
 
                 <div id="deletedExtraWrapper"></div>
 
