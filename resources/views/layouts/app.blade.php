@@ -203,9 +203,16 @@
 
     <script>
         function toggleDropdown(id) {
-            const el = document.getElementById(id);
-            el.classList.toggle('hidden');
+        const sidebar = document.getElementById("sidebar");
+
+        // ❌ jangan izinkan dropdown kalau sidebar collapsed
+        if (sidebar.classList.contains("sidebar-collapsed")) {
+            return;
         }
+
+        const el = document.getElementById(id);
+        el.classList.toggle('hidden');
+    }
 
         // Function to highlight active menu
         function highlightActiveMenu() {
@@ -242,17 +249,27 @@
 <body class="bg-gray-50">
     <div class="flex min-h-screen">
         <!-- Sidebar - Fixed -->
-        <aside class="w-64 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 fixed h-full overflow-y-auto">
+        <aside id="sidebar"
+         class="w-64 bg-white shadow-lg border-r border-gray-200 flex-shrink-0 fixed h-full overflow-y-auto">
             <!-- Logo Section -->
             <div class="py-6 px-6 border-b border-gray-200">
-                <div class="flex flex-col items-center space-y-3">
-                    <img src="{{ asset('storage/logo.png') }}" class="h-12 w-12 object-contain" alt="Logo">
-                    <div class="text-center">
-                        <h2 class="text-xs font-bold" style="color:#0d47a1">APKOMINDO</h2>
-                        <p class="text-xs text-gray-400">Asosiasi Pengusaha Komputer Indonesia</p>
-                    </div>
-                </div>
-            </div>
+              <div class="logo-wrapper flex flex-col items-center gap-2">
+                  <img
+                      src="{{ asset('storage/logo.png') }}"
+                      class="logo-img h-12 w-12 object-contain"
+                      alt="APKOMINDO Logo"
+                  >
+
+                  <!-- TEXT (akan hilang saat collapsed) -->
+                  <div class="logo-text text-center">
+                      <h2 class="text-xs font-bold text-blue-900">APKOMINDO</h2>
+                      <p class="text-[10px] text-gray-400 leading-tight">
+                          Asosiasi Pengusaha<br>Komputer Indonesia
+                      </p>
+                  </div>
+              </div>
+          </div>
+
 
             <!-- Navigation -->
             <nav class="py-4 px-4 space-y-6">
@@ -400,10 +417,21 @@
         </aside>
 
         <!-- Main Content Area - dengan margin left untuk sidebar -->
-        <div class="flex-1 flex flex-col min-w-0 ml-64">
+        <div id="mainContent"
+          class="flex-1 flex flex-col min-w-0 ml-64
+                  transition-all duration-300">
             <!-- Header - Fixed/Sticky -->
             <header class="app-header sticky top-0 z-40">
-                <div class="flex items-center justify-between px-6 py-4">
+              <div class="flex items-center justify-between px-6 py-4">
+                  <!-- Sidebar Toggle -->
+                  <button id="sidebarToggle"
+                      class="mr-4 p-2 rounded-lg hover:bg-blue-100 text-blue-700">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 6h16M4 12h16M4 18h16" />
+                      </svg>
+                  </button>
+
                     <!-- User Menu -->
                     <div class="flex items-center ml-auto">
                         <!-- User Dropdown -->
@@ -529,6 +557,36 @@
   );
 }
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.getElementById("sidebar");
+    const main    = document.getElementById("mainContent");
+    const toggle  = document.getElementById("sidebarToggle");
+
+    let collapsed = false;
+
+    toggle.addEventListener("click", function () {
+        collapsed = !collapsed;
+
+        if (collapsed) {
+            sidebar.classList.remove("w-64");
+            sidebar.classList.add("w-20", "sidebar-collapsed");
+
+            main.classList.remove("ml-64");
+            main.classList.add("ml-20");
+        } else {
+            sidebar.classList.remove("w-20", "sidebar-collapsed");
+            sidebar.classList.add("w-64");
+
+            main.classList.remove("ml-20");
+            main.classList.add("ml-64");
+        }
+    });
+});
+</script>
+
+
+
 
 <style>
 /* ============================= */
@@ -854,6 +912,67 @@ html {
 .btn-detail {
   border-color: #e5e7eb;
   color: #475569;
+}
+
+/* ================= COLLAPSED SIDEBAR ================= */
+
+.sidebar-collapsed nav {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* sembunyikan semua text */
+.sidebar-collapsed nav span,
+.sidebar-collapsed nav h3,
+.sidebar-collapsed nav p {
+  display: none !important;
+}
+
+/* sembunyikan arrow dropdown */
+.sidebar-collapsed nav button svg:last-child {
+  display: none;
+}
+
+/* semua menu jadi icon-center */
+.sidebar-collapsed nav a,
+.sidebar-collapsed nav button {
+  justify-content: center;
+  padding: 12px 0 !important;
+}
+
+/* icon center */
+.sidebar-collapsed nav svg {
+  margin: 0 !important;
+}
+
+/* ================= LOGO BEHAVIOR ================= */
+
+/* default (sidebar terbuka) */
+.logo-wrapper {
+  transition: all .25s ease;
+}
+
+.logo-text {
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+/* sidebar collapsed */
+.sidebar-collapsed .logo-text {
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  display: none;
+}
+
+/* logo tetap center */
+.sidebar-collapsed .logo-wrapper {
+  gap: 0;
+}
+
+/* logo sedikit lebih kecil saat collapsed (optional) */
+.sidebar-collapsed .logo-img {
+  height: 40px;
+  width: 40px;
 }
 
 
