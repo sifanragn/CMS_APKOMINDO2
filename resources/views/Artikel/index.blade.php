@@ -110,7 +110,7 @@
                     @csrf
 
                     <label class="flex items-center gap-2 text-sm">
-                        <input type="checkbox" name="display" value="0" checked>
+                        <input type="checkbox" name="display" value="1" checked>
                         Tampilkan artikel
                     </label>
 

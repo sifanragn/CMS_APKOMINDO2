@@ -31,6 +31,9 @@ use App\Http\Controllers\TentangkamiController;
 use App\Models\CategoryStore;
 use App\Models\TentangkamiCategory;
 use App\Http\Controllers\ArticleCategoryController;
+use App\Http\Controllers\MemberRegistrationController;
+use App\Http\Controllers\IndustryController;
+use App\Http\Controllers\DpdLocationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -64,6 +67,12 @@ Route::get('/storage/{path}', function ($path) {
     ]);
 })->where('path', '.*');
 
+Route::post('/register-member', 
+    [MemberRegistrationController::class, 'store']
+)->name('member.register');
+
+
+Route::middleware(['auth'])->group(function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 Route::get('/slider-preview', [SliderController::class, 'showHomeSlider'])->name('slider.preview');
@@ -90,6 +99,57 @@ Route::put('/social-account/{socialAccount}/update', [SosmedController::class, '
 // Benar - tanpa parameter untuk store
 Route::post('/social-account/store', [SosmedController::class, 'store'])->name('social.store');
 Route::delete('/social-account/{id}', [SosmedController::class, 'destroy'])->name('social.destroy');
+
+/*
+|--------------------------------------------------------------------------
+| MEMBER REGISTRATION (PENDAFTARAN ANGGOTA)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('member-registrations')->name('member-registrations.')->group(function () {
+
+    Route::get('/', 
+        [MemberRegistrationController::class, 'index']
+    )->name('index');
+
+    Route::get('/{id}', 
+        [MemberRegistrationController::class, 'show']
+    )->name('show');
+
+    Route::post('/{id}/approve', 
+        [MemberRegistrationController::class, 'approve']
+    )->name('approve');
+
+    Route::post('/{id}/reject', 
+        [MemberRegistrationController::class, 'reject']
+    )->name('reject');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| MASTER INDUSTRY
+|--------------------------------------------------------------------------
+*/
+Route::prefix('industries')->name('industries.')->group(function () {
+
+    Route::get('/', 
+        [IndustryController::class, 'index']
+    )->name('index');
+
+    Route::post('/', 
+        [IndustryController::class, 'store']
+    )->name('store');
+
+    Route::put('/{industry}', 
+        [IndustryController::class, 'update']
+    )->name('update');
+
+    Route::delete('/{industry}', 
+        [IndustryController::class, 'destroy']
+    )->name('destroy');
+
+});
+
 
 Route::prefix('hows')->name('hows.')->group(function () {
     Route::get('/', [HowsController::class, 'index'])->name('index');
@@ -170,6 +230,13 @@ Route::prefix('category-artikel')
         Route::post('/', [ArticleCategoryController::class, 'store'])->name('store');
         Route::put('/{category}', [ArticleCategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [ArticleCategoryController::class, 'destroy'])->name('destroy');
+});
+
+Route::prefix('dpd-locations')->name('dpd-locations.')->group(function () {
+    Route::get('/', [DpdLocationController::class, 'index'])->name('index');
+    Route::post('/', [DpdLocationController::class, 'store'])->name('store');
+    Route::put('/{dpdLocation}', [DpdLocationController::class, 'update'])->name('update');
+    Route::delete('/{dpdLocation}', [DpdLocationController::class, 'destroy'])->name('destroy');
 });
 
 
@@ -259,3 +326,5 @@ Route::get('applications/{application}/download', [ApplicationController::class,
 
 Route::post('applications/bulk-delete', [ApplicationController::class, 'bulkDelete'])
     ->name('applications.bulkDelete');
+
+});

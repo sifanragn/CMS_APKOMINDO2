@@ -24,6 +24,10 @@ use App\Http\Controllers\SliderController;
 use App\Http\Controllers\TentangkamiController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Api\ApiArticleController;
+use App\Http\Controllers\Api\MemberRegistrationController;
+use App\Http\Controllers\Api\ApiIndustryController;
+use App\Http\Controllers\Api\ApiDpdLocationController;
+
 
 
 // Info user login (dengan Sanctum)
@@ -36,6 +40,18 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // ==============================
 Route::get('/hows', [ApiHowsController::class, 'index']);
 Route::get('/hows/{id}', [ApiHowsController::class, 'show']);
+
+// ==============================
+//  REGISTER ANGGOTA (PUBLIC)
+// ==============================
+
+// SUBMIT FORM PENDAFTARAN ANGGOTA
+Route::post('/member-register', [MemberRegistrationController::class, 'store']);
+
+// MASTER DATA DROPDOWN FORM
+Route::get('/industries', [ApiIndustryController::class, 'index']);
+Route::get('/dpd-locations', [ApiDpdLocationController::class, 'index']);
+
 
 Route::get('/agendas', [ApiAgendaController::class, 'index']);
 Route::get('/agendas/{id}', [ApiAgendaController::class, 'show']);
@@ -75,6 +91,25 @@ Route::post('/applications', [ApiApplicationController::class, 'store']);
 //  Protected API Routes (auth:sanctum)
 // ==============================
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::prefix('member-registrations')->name('api.member-registrations.')->group(function () {
+        Route::get('/', [MemberRegistrationController::class, 'index'])->name('index');
+        Route::get('/{id}', [MemberRegistrationController::class, 'show'])->name('show');
+        Route::post('/{id}/approve', [MemberRegistrationController::class, 'approve'])->name('approve');
+        Route::post('/{id}/reject', [MemberRegistrationController::class, 'reject'])->name('reject');
+    });
+
+    Route::prefix('industries')->name('api.industries.')->group(function () {
+        Route::post('/', [ApiIndustryController::class, 'store'])->name('store');
+        Route::put('/{id}', [ApiIndustryController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ApiIndustryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('dpd-locations')->name('api.dpd-locations.')->group(function () {
+        Route::post('/', [ApiDpdLocationController::class, 'store'])->name('store');
+        Route::put('/{id}', [ApiDpdLocationController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ApiDpdLocationController::class, 'destroy'])->name('destroy');
+    });
 
     Route::prefix('articles')->name('api.articles.')->group(function () {
         Route::post('/', [ApiArticleController::class, 'store'])->name('store');

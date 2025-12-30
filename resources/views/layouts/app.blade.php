@@ -379,6 +379,39 @@
                     <h3 class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Aktivitas &
                         Layanan</h3>
                     <div class="space-y-1">
+
+                    <!-- ================= Pendaftaran Anggota ================= -->
+                      <button onclick="toggleDropdown('registration-dropdown')"
+                        class="group w-full flex items-center justify-between px-4 py-3 rounded-lg text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-900">
+                        <div class="flex items-center">
+                          <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span>Pendaftaran Anggota</span>
+                        </div>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      <div id="registration-dropdown" class="ml-8 space-y-1 hidden">
+                        <a href="{{ route('member-registrations.index') }}"
+                          class="block px-4 py-2 rounded-lg text-xs text-gray-600 hover:bg-blue-50 hover:text-blue-900">
+                          Data Pendaftaran
+                        </a>
+
+                        <a href="{{ route('dpd-locations.index') }}"
+                          class="block px-4 py-2 rounded-lg text-xs text-gray-600 hover:bg-blue-50 hover:text-blue-900">
+                          Lokasi DPD
+                        </a>
+
+                        <a href="{{ route('industries.index') }}"
+                          class="block px-4 py-2 rounded-lg text-xs text-gray-600 hover:bg-blue-50 hover:text-blue-900">
+                          Industri
+                        </a>
+                      </div>
                         <!-- Kegiatan & Event -->
                         <button onclick="toggleDropdown('kegiatan-dropdown')"
                             class="group w-full flex items-center justify-between px-4 py-3 rounded-lg text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-all duration-200">
@@ -411,8 +444,6 @@
                         </a>
                     </div>
                 </div>
-
-            
             </nav>
         </aside>
 
@@ -439,7 +470,7 @@
                             <button onclick="toggleDropdown('user-dropdown')"
                                 class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200">
                                <div class="w-6 h-6 rounded-full flex items-center justify-center bg-blue-900">
-                                    @if (auth()->user()->profile_picture)
+                                    @if (auth()->check() && auth()->user()->profile_picture)
                                         <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}"
                                             class="w-full h-full rounded-full object-cover" alt="Profile Picture">
                                     @else
@@ -465,7 +496,7 @@
                                 <div class="px-4 py-3 border-b border-gray-200">
                                     <div class="flex items-center space-x-3">
                                         <div class="w-6 h-6 rounded-full flex items-center justify-center bg-blue-900">
-                                            @if (auth()->user()->profile_picture)
+                                            @if (auth()->check() && auth()->user()->profile_picture)
                                                 <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}"
                                                     class="w-full h-full rounded-full object-cover"
                                                     alt="Profile Picture">

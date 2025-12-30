@@ -63,7 +63,6 @@ class ApiArticleController extends Controller
             'display'     => 'boolean'
         ]);
 
-        $data['slug'] = Str::slug($data['title']);
         $data['display'] = $request->display ?? 1;
 
         if ($request->hasFile('image')) {
@@ -95,7 +94,6 @@ class ApiArticleController extends Controller
             'display'     => 'boolean'
         ]);
 
-        $data['slug'] = Str::slug($data['title']);
         $data['display'] = $request->display ?? $article->display;
 
         if ($request->hasFile('image')) {

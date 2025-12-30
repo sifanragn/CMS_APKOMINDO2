@@ -19,11 +19,11 @@ class ArticleController extends Controller
     }
 
     public function show(Article $artikel)
-{
-    return view('artikel.show', [
-        'article' => $artikel // bebas mau dinamain apa di view
-    ]);
-}
+    {
+        return view('artikel.show', [
+            'article' => $artikel // bebas mau dinamain apa di view
+        ]);
+    }
 
 
     public function store(Request $request)
@@ -35,8 +35,7 @@ class ArticleController extends Controller
             'image'       => 'required|image|max:2048',
         ]);
 
-        $data['slug']    = Str::slug($data['title']);
-        $data['display'] = $request->has('display') ? 1 : 0;
+        $data['display'] = $request->boolean('display');
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('articles', 'public');
@@ -44,45 +43,45 @@ class ArticleController extends Controller
 
         Article::create($data);
 
-        return redirect()->route('artikel.index')
-    ->with('success', 'Artikel berhasil diperbarui');
-
+        return redirect()
+            ->route('artikel.index')
+            ->with('success', 'Artikel berhasil ditambahkan');
     }
+
 
     public function update(Request $request, Article $artikel)
-{
-    $data = $request->validate([
-        'title'       => 'required|string|max:255',
-        'category_id' => 'nullable|exists:article_categories,id',
-        'content'     => 'required',
-        'image'       => 'nullable|image|max:2048',
-    ]);
+    {
+        $data = $request->validate([
+            'title'       => 'required|string|max:255',
+            'category_id' => 'nullable|exists:article_categories,id',
+            'content'     => 'required',
+            'image'       => 'nullable|image|max:2048',
+        ]);
 
-    $data['slug']    = Str::slug($data['title']);
-    $data['display'] = $request->has('display');
+        $data['display'] = $request->boolean('display');
 
-    if ($request->hasFile('image')) {
-        if ($artikel->image) {
-            Storage::disk('public')->delete($artikel->image);
+        if ($request->hasFile('image')) {
+            if ($artikel->image) {
+                Storage::disk('public')->delete($artikel->image);
+            }
+            $data['image'] = $request->file('image')->store('articles', 'public');
         }
-        $data['image'] = $request->file('image')->store('articles', 'public');
+
+        $artikel->update($data);
+
+        return back()->with('success', 'Artikel berhasil diperbarui');
     }
-
-    $artikel->update($data);
-
-    return back()->with('success', 'Artikel berhasil diperbarui');
-}
 
 
     public function destroy(Article $artikel)
-{
-    if ($artikel->image) {
-        Storage::disk('public')->delete($artikel->image);
+    {
+        if ($artikel->image) {
+            Storage::disk('public')->delete($artikel->image);
+        }
+
+        $artikel->delete();
+
+        return back()->with('success', 'Artikel berhasil dihapus');
     }
-
-    $artikel->delete();
-
-    return back()->with('success', 'Artikel berhasil dihapus');
-}
 
 }
